@@ -282,6 +282,7 @@ require_once __DIR__ . '/../../includes/student_header.php';
                                 <label class="form-label">Doctor</label>
                                 <input type="text" name="doctor" class="form-control" list="doctors-list"
                                     value="<?= htmlspecialchars($editingDoctorName) ?>"
+                                    autocomplete="off"
                                     placeholder="Pick from the list or type a new one">
                                 <datalist id="doctors-list">
                                     <?php foreach ($doctorsList as $d): ?>
@@ -299,6 +300,7 @@ require_once __DIR__ . '/../../includes/student_header.php';
                                 <label class="form-label">Preceptor</label>
                                 <input type="text" name="preceptor" class="form-control" list="preceptors-list"
                                     value="<?= htmlspecialchars($editingPreceptorName) ?>"
+                                    autocomplete="off"
                                     placeholder="Pick from the list or type a new one">
                                 <datalist id="preceptors-list">
                                     <?php foreach ($preceptorsList as $p): ?>
