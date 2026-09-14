@@ -48,6 +48,7 @@ require_once __DIR__ . '/../../includes/admin_header.php';
             </form>
         </div>
     </div>
-    <p class="text-center mt-3"><a href="/" class="text-muted small">← Back to site</a></p>
+    <p class="text-center mt-3 mb-1"><a href="/forgot_password.php" class="text-muted small">Forgot your password?</a></p>
+    <p class="text-center mb-0"><a href="/" class="text-muted small">← Back to site</a></p>
 </div>
 <?php require_once __DIR__ . '/../../includes/admin_footer.php'; ?>

@@ -6,6 +6,34 @@ $fullTitle = ($pageTitle !== '' ? $pageTitle . ' · ' : '') . 'Admin · ' . html
 $extraHead = $extraHead ?? '';
 $hideNav = $hideNav ?? false;
 $activeTopNav = $activeTopNav ?? '';
+
+/**
+ * Sub-nav for grouped admin sections. Grouped pages set
+ * $activeTopNav = 'settings' and $subnavActive = the specific page key,
+ * then drop <?= admin_subnav_html(...) ?> into a col-md-3 next to their
+ * main content.
+ */
+function admin_subnav_html(string $group, string $active): string
+{
+    $groups = [
+        'settings' => [
+            ['settings',      'Site info',     '/admin/settings.php'],
+            ['notifications', 'Notifications', '/admin/notifications.php'],
+            ['users',         'Users',         '/admin/users.php'],
+        ],
+    ];
+    if (!isset($groups[$group])) return '';
+    $html = '<div class="list-group admin-subnav mb-3">';
+    foreach ($groups[$group] as [$key, $label, $url]) {
+        $activeCls = $key === $active ? 'active' : '';
+        $html .= sprintf(
+            '<a href="%s" class="list-group-item list-group-item-action %s">%s</a>',
+            htmlspecialchars($url), $activeCls, htmlspecialchars($label)
+        );
+    }
+    $html .= '</div>';
+    return $html;
+}
 ?><!doctype html>
 <html lang="en">
 <head>
@@ -43,7 +71,6 @@ $activeTopNav = $activeTopNav ?? '';
                 ['dashboard', 'Dashboard',       '/admin/'],
                 ['feedback',  'Change requests', '/admin/feedback.php'],
                 ['settings',  'Settings',        '/admin/settings.php'],
-                ['users',     'Users',           '/admin/users.php'],
             ];
             ?>
             <ul class="navbar-nav me-auto">

@@ -15,6 +15,17 @@ function app_settings(): array
         'github_token'      => '',
         'github_repo_owner' => 'jeffosness',
         'github_repo_name'  => 'heather',
+        // Notification sender identity.
+        'notification_from_email' => '',
+        'notification_from_name'  => '',
+        // SMTP transport — when host/user/pass are all set, notify_send_one()
+        // uses SMTP instead of PHP mail(). Works for IONOS mailboxes and any
+        // SMTP provider that speaks LOGIN auth + STARTTLS.
+        'smtp_host'       => '',
+        'smtp_port'       => 587,
+        'smtp_encryption' => 'tls',
+        'smtp_username'   => '',
+        'smtp_password'   => '',
     ];
     $loaded = read_json_file(APP_SETTINGS_FILE, []);
     return array_merge($defaults, is_array($loaded) ? $loaded : []);

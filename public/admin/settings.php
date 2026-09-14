@@ -28,7 +28,10 @@ $pageTitle = 'Settings';
 $activeTopNav = 'settings';
 require_once __DIR__ . '/../../includes/admin_header.php';
 ?>
-<div class="container py-3" style="max-width: 720px;">
+<div class="container py-3">
+<div class="row g-4">
+<div class="col-md-3"><?= admin_subnav_html('settings', 'settings') ?></div>
+<div class="col-md-9" style="max-width: 720px;">
     <h1 class="h4 mb-3">Site Settings</h1>
     <?php if ($msg !== ''): ?>
         <div class="alert alert-info alert-dismissible fade show"><?= htmlspecialchars($msg) ?><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
@@ -77,5 +80,7 @@ require_once __DIR__ . '/../../includes/admin_header.php';
             </form>
         </div>
     </div>
+</div>
+</div>
 </div>
 <?php require_once __DIR__ . '/../../includes/admin_footer.php'; ?>
