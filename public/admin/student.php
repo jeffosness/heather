@@ -218,14 +218,30 @@ function mini_wheel(int $have, int $need, string $label): string
                         $sp = $specById[(string) ($c['specialty_id'] ?? '')] ?? null;
                         $dName = ($doctorById[(string) ($c['doctor_id']    ?? '')]['name'] ?? '');
                         $pName = ($preceptorById[(string) ($c['preceptor_id'] ?? '')]['name'] ?? '');
+                        $dRating = (int) ($c['doctor_rating']    ?? 0);
+                        $pRating = (int) ($c['preceptor_rating'] ?? 0);
                     ?>
                         <tr>
                             <td class="small text-muted"><?= htmlspecialchars((string) $c['case_date']) ?></td>
                             <td><?= htmlspecialchars((string) $c['procedure']) ?></td>
                             <td class="small"><?= $sp ? htmlspecialchars((string) $sp['name']) : '<span class="text-danger">unset</span>' ?></td>
                             <td class="small"><span class="badge bg-light text-dark border"><?= htmlspecialchars(role_label((string) $c['role'])) ?></span></td>
-                            <td class="small text-muted"><?= htmlspecialchars($dName) ?></td>
-                            <td class="small text-muted"><?= htmlspecialchars($pName) ?></td>
+                            <td class="small text-muted">
+                                <?= htmlspecialchars($dName) ?>
+                                <?php if ($dRating > 0): ?>
+                                    <span style="color:#f0a500;" title="<?= $dRating ?> stars">
+                                        <?= str_repeat('★', $dRating) ?><?= str_repeat('☆', 5 - $dRating) ?>
+                                    </span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="small text-muted">
+                                <?= htmlspecialchars($pName) ?>
+                                <?php if ($pRating > 0): ?>
+                                    <span style="color:#f0a500;" title="<?= $pRating ?> stars">
+                                        <?= str_repeat('★', $pRating) ?><?= str_repeat('☆', 5 - $pRating) ?>
+                                    </span>
+                                <?php endif; ?>
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                     </tbody>

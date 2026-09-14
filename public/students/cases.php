@@ -117,26 +117,26 @@ $extraHead = <<<'CSS'
         z-index: 5;
     }
 
-    /* 5-star rating picker. RTL flex so hovering / checking a star lights
-       up itself + all preceding stars via the sibling combinator. Hidden
-       radios so no JS is required. "None" button at the end clears. */
-    .star-picker { display: inline-flex; direction: rtl; gap: .1rem; align-items: center; }
-    .star-picker input { position: absolute; opacity: 0; pointer-events: none; }
-    .star-picker label {
-        font-size: 1.8rem;
+    /* 5-star rating picker. Simple button-per-star wiring a hidden input
+       via JS — this replaces an earlier CSS-only radio version that was
+       fragile on some mobile browsers (the absolute-positioned hidden
+       radios silently failed to persist a tap). Hidden input always
+       submits, so 'clear' actually clears. */
+    .star-picker { display: inline-flex; gap: .1rem; align-items: center; }
+    .star-picker .star-btn {
+        background: transparent;
+        border: 0;
+        font-size: 1.9rem;
         line-height: 1;
-        cursor: pointer;
         color: #d1d5db;
+        padding: .1rem .25rem;
+        cursor: pointer;
         transition: color .1s;
-        padding: 0 .1rem;
     }
-    .star-picker label:hover,
-    .star-picker label:hover ~ label,
-    .star-picker input:checked ~ label {
-        color: #f0a500;
-    }
+    .star-picker .star-btn.lit { color: #f0a500; }
+    .star-picker .star-btn:hover,
+    .star-picker .star-btn:focus-visible { color: #f4a800; outline: none; }
     .star-clear {
-        direction: ltr;
         font-size: .8rem;
         color: #6b7280;
         text-decoration: underline;
@@ -242,25 +242,25 @@ require_once __DIR__ . '/../../includes/student_header.php';
                             || $currentDoctorRating > 0 || $currentPreceptorRating > 0
                             || !empty($editingCase['doctor_comment']) || !empty($editingCase['preceptor_comment']);
 
-                        // Render a 5-star picker + Clear button for the given field.
-                        // Uses RTL trick so hover/check lights up left-to-right visually.
+                        // 5-star picker: button-per-star + a hidden input the JS
+                        // updates on tap. Hidden input always submits, so
+                        // update_case can tell 0 (cleared) from "unchanged".
                         $starPicker = function (string $fieldName, int $current) {
-                            $scope = str_replace('_', '-', $fieldName);
-                            $out = '<div class="star-picker" data-scope="' . htmlspecialchars($scope) . '">';
-                            for ($v = 5; $v >= 1; $v--) {
-                                $id = $scope . '-' . $v;
-                                $checked = $current === $v ? 'checked' : '';
+                            $current = max(0, min(5, $current));
+                            $hiddenId = 'h-' . str_replace('_', '-', $fieldName);
+                            $out = sprintf(
+                                '<input type="hidden" name="%s" id="%s" value="%d">',
+                                htmlspecialchars($fieldName), htmlspecialchars($hiddenId), $current
+                            );
+                            $out .= sprintf('<div class="star-picker" data-target="%s">', htmlspecialchars($hiddenId));
+                            for ($v = 1; $v <= 5; $v++) {
+                                $lit = $v <= $current ? ' lit' : '';
                                 $out .= sprintf(
-                                    '<input type="radio" id="%s" name="%s" value="%d" %s>
-                                     <label for="%s" title="%d star%s">★</label>',
-                                    htmlspecialchars($id), htmlspecialchars($fieldName), $v, $checked,
-                                    htmlspecialchars($id), $v, $v === 1 ? '' : 's'
+                                    '<button type="button" class="star-btn%s" data-value="%d" title="%d star%s" aria-label="%d star%s">★</button>',
+                                    $lit, $v, $v, $v === 1 ? '' : 's', $v, $v === 1 ? '' : 's'
                                 );
                             }
-                            $out .= sprintf(
-                                '<button type="button" class="star-clear" data-clears="%s">clear</button>',
-                                htmlspecialchars($scope)
-                            );
+                            $out .= '<button type="button" class="star-clear" data-value="0">clear</button>';
                             $out .= '</div>';
                             return $out;
                         };
@@ -312,14 +312,27 @@ require_once __DIR__ . '/../../includes/student_header.php';
                         </div>
                     </details>
                     <script>
-                    // Star-picker "clear" — un-checks all radios in the picker, so 0 = not rated.
-                    document.querySelectorAll('.star-clear').forEach(btn => {
-                        btn.addEventListener('click', () => {
-                            const scope = btn.dataset.clears;
-                            const wrap = btn.closest('.star-picker');
-                            if (!wrap) return;
-                            wrap.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+                    // Star picker — tap a star (or "clear") to set the value
+                    // on the hidden input the picker points at. Repaints all
+                    // buttons so the correct number are lit.
+                    document.querySelectorAll('.star-picker').forEach(picker => {
+                        const targetId = picker.dataset.target;
+                        const hidden = document.getElementById(targetId);
+                        if (!hidden) return;
+                        function paint() {
+                            const current = parseInt(hidden.value, 10) || 0;
+                            picker.querySelectorAll('.star-btn').forEach(btn => {
+                                const v = parseInt(btn.dataset.value, 10);
+                                btn.classList.toggle('lit', v <= current);
+                            });
+                        }
+                        picker.querySelectorAll('[data-value]').forEach(btn => {
+                            btn.addEventListener('click', () => {
+                                hidden.value = String(parseInt(btn.dataset.value, 10) || 0);
+                                paint();
+                            });
                         });
+                        paint();
                     });
                     </script>
 
