@@ -18,6 +18,8 @@ define('APP_FEEDBACK_FILE',  APP_PROTECTED_DIR . DIRECTORY_SEPARATOR . 'feedback
 define('APP_STUDENTS_FILE',    APP_PROTECTED_DIR . DIRECTORY_SEPARATOR . 'students.json');
 define('APP_CASES_FILE',       APP_PROTECTED_DIR . DIRECTORY_SEPARATOR . 'cases.json');
 define('APP_SPECIALTIES_FILE', APP_PROTECTED_DIR . DIRECTORY_SEPARATOR . 'specialties.json');
+define('APP_DOCTORS_FILE',     APP_PROTECTED_DIR . DIRECTORY_SEPARATOR . 'doctors.json');
+define('APP_PRECEPTORS_FILE',  APP_PROTECTED_DIR . DIRECTORY_SEPARATOR . 'preceptors.json');
 
 if (session_status() === PHP_SESSION_NONE) {
     $sessionLifetime = 30 * 24 * 60 * 60;

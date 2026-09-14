@@ -62,8 +62,13 @@ $specialties = load_specialties();
 $specById = [];
 foreach ($specialties as $s) $specById[(string) $s['id']] = $s;
 
-$doctors = student_doctors($studentId);
-$preceptors = student_preceptors($studentId);
+// Site-wide doctor + preceptor lists (auto-populated as students type new
+// names — Heather can normalize in admin). Every student's autocomplete
+// draws from the same set, so 'Dr. Chen' stays 'Dr. Chen' across the cohort.
+$doctorsList = load_doctors();
+$preceptorsList = load_preceptors();
+$doctorById = doctors_by_id();
+$preceptorById = preceptors_by_id();
 
 $msg = (string) ($_GET['msg'] ?? '');
 $showAdd = isset($_GET['add']) || isset($_GET['edit']);
@@ -136,25 +141,34 @@ require_once __DIR__ . '/../../includes/student_header.php';
                                 value="<?= htmlspecialchars((string) ($editingCase['procedure'] ?? '')) ?>"
                                 placeholder="e.g. Laparoscopic Cholecystectomy">
                         </div>
+                        <?php
+                            $editingDoctorName = $editingCase && !empty($editingCase['doctor_id'])
+                                ? (string) ($doctorById[(string) $editingCase['doctor_id']]['name'] ?? '')
+                                : '';
+                            $editingPreceptorName = $editingCase && !empty($editingCase['preceptor_id'])
+                                ? (string) ($preceptorById[(string) $editingCase['preceptor_id']]['name'] ?? '')
+                                : '';
+                        ?>
                         <div class="col-md-6">
                             <label class="form-label">Doctor</label>
                             <input type="text" name="doctor" class="form-control" list="doctors-list"
-                                value="<?= htmlspecialchars((string) ($editingCase['doctor'] ?? '')) ?>"
-                                placeholder="e.g. Dr. Chen">
+                                value="<?= htmlspecialchars($editingDoctorName) ?>"
+                                placeholder="Pick from the list or type a new one">
                             <datalist id="doctors-list">
-                                <?php foreach ($doctors as $d): ?>
-                                    <option value="<?= htmlspecialchars($d) ?>"></option>
+                                <?php foreach ($doctorsList as $d): ?>
+                                    <option value="<?= htmlspecialchars((string) $d['name']) ?>"></option>
                                 <?php endforeach; ?>
                             </datalist>
+                            <small class="text-muted">New names get added to Heather's list automatically.</small>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Preceptor</label>
                             <input type="text" name="preceptor" class="form-control" list="preceptors-list"
-                                value="<?= htmlspecialchars((string) ($editingCase['preceptor'] ?? '')) ?>"
-                                placeholder="e.g. CST Smith">
+                                value="<?= htmlspecialchars($editingPreceptorName) ?>"
+                                placeholder="Pick from the list or type a new one">
                             <datalist id="preceptors-list">
-                                <?php foreach ($preceptors as $p): ?>
-                                    <option value="<?= htmlspecialchars($p) ?>"></option>
+                                <?php foreach ($preceptorsList as $p): ?>
+                                    <option value="<?= htmlspecialchars((string) $p['name']) ?>"></option>
                                 <?php endforeach; ?>
                             </datalist>
                         </div>
@@ -204,8 +218,20 @@ require_once __DIR__ . '/../../includes/student_header.php';
                                 </td>
                                 <td><?= $sp ? htmlspecialchars((string) $sp['name']) : '<span class="text-danger">unset</span>' ?></td>
                                 <td><span class="badge bg-light text-dark border"><?= htmlspecialchars(role_label((string) $c['role'])) ?></span></td>
-                                <td class="small text-muted"><?= htmlspecialchars((string) ($c['doctor'] ?? '')) ?></td>
-                                <td class="small text-muted"><?= htmlspecialchars((string) ($c['preceptor'] ?? '')) ?></td>
+                                <td class="small text-muted">
+                                    <?php
+                                        $dId = (string) ($c['doctor_id'] ?? '');
+                                        $dName = $dId !== '' ? (string) ($doctorById[$dId]['name'] ?? '(deleted)') : '';
+                                        echo htmlspecialchars($dName);
+                                    ?>
+                                </td>
+                                <td class="small text-muted">
+                                    <?php
+                                        $pId = (string) ($c['preceptor_id'] ?? '');
+                                        $pName = $pId !== '' ? (string) ($preceptorById[$pId]['name'] ?? '(deleted)') : '';
+                                        echo htmlspecialchars($pName);
+                                    ?>
+                                </td>
                                 <td class="text-end text-nowrap">
                                     <a href="/students/cases.php?edit=<?= $cid ?>" class="btn btn-sm btn-outline-secondary">Edit</a>
                                     <form method="post" class="d-inline" onsubmit="return confirm('Delete this case?')">

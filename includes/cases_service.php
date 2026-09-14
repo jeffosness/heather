@@ -2,6 +2,8 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/json_store.php';
+require_once __DIR__ . '/doctors_service.php';
+require_once __DIR__ . '/preceptors_service.php';
 
 /**
  * Surgical case log entries. One row = one case a student scrubbed.
@@ -9,7 +11,14 @@ require_once __DIR__ . '/json_store.php';
  * these rows via case_progress.php.
  *
  *   { id, student_id, case_date, specialty_id, procedure,
- *     doctor, preceptor, role, notes, created_at, updated_at? }
+ *     doctor_id?, preceptor_id?, role, notes, created_at, updated_at? }
+ *
+ * doctor_id and preceptor_id point at doctors.json / preceptors.json.
+ * Case-entry forms take a free-text name (with datalist autocomplete);
+ * add_case / update_case resolve the name to an ID via
+ * find_or_create_doctor_by_name() so Heather sees a single canonical
+ * doctor record no matter how students type it (and can rename to
+ * clean up variants).
  *
  * role is one of: 'first_scrub' | 'second_scrub' | 'observer'
  * (Observer cases are logged for the student's own record but do not
@@ -66,16 +75,21 @@ function add_case(string $studentId, array $fields): ?array
         || !in_array($role, CASE_ROLES, true) || $caseDate === '') {
         return null;
     }
+    // Resolve the typed name to a canonical ID — creates the doctor /
+    // preceptor record on the fly if this is the first time anyone's
+    // used that name. Heather can rename or delete from admin.
+    $doctorId    = find_or_create_doctor_by_name((string) ($fields['doctor']    ?? ''));
+    $preceptorId = find_or_create_preceptor_by_name((string) ($fields['preceptor'] ?? ''));
     $rec = [
         'id'           => gen_id('c_'),
         'student_id'   => $studentId,
         'case_date'    => $caseDate,
         'specialty_id' => $specialty,
         'procedure'    => $procedure,
-        'doctor'       => trim((string) ($fields['doctor']    ?? '')),
-        'preceptor'    => trim((string) ($fields['preceptor'] ?? '')),
+        'doctor_id'    => $doctorId,
+        'preceptor_id' => $preceptorId,
         'role'         => $role,
-        'notes'        => trim((string) ($fields['notes']     ?? '')),
+        'notes'        => trim((string) ($fields['notes'] ?? '')),
         'created_at'   => date('Y-m-d H:i:s'),
     ];
     $items = load_cases();
@@ -90,8 +104,8 @@ function update_case(string $id, array $fields): bool
         if (array_key_exists('case_date', $fields))    $c['case_date']    = trim((string) $fields['case_date']);
         if (array_key_exists('specialty_id', $fields)) $c['specialty_id'] = trim((string) $fields['specialty_id']);
         if (array_key_exists('procedure', $fields))    $c['procedure']    = trim((string) $fields['procedure']);
-        if (array_key_exists('doctor', $fields))       $c['doctor']       = trim((string) $fields['doctor']);
-        if (array_key_exists('preceptor', $fields))    $c['preceptor']    = trim((string) $fields['preceptor']);
+        if (array_key_exists('doctor', $fields))       $c['doctor_id']    = find_or_create_doctor_by_name((string) $fields['doctor']);
+        if (array_key_exists('preceptor', $fields))    $c['preceptor_id'] = find_or_create_preceptor_by_name((string) $fields['preceptor']);
         if (array_key_exists('role', $fields)) {
             $r = trim((string) $fields['role']);
             if (in_array($r, CASE_ROLES, true)) $c['role'] = $r;
@@ -108,30 +122,19 @@ function delete_case(string $id): bool
 }
 
 /**
- * Distinct doctors / preceptors the student has already used, for
- * autocomplete on the case entry form. Keeps typing consistent
- * ("Dr. Chen" vs "Dr Chen" vs "Sarah Chen, MD").
+ * Look-up tables (id → record) for the display side of the case list.
+ * Avoids O(cases × doctors) scanning when rendering.
  */
-function student_doctors(string $studentId): array
+function doctors_by_id(): array
 {
-    $set = [];
-    foreach (cases_for_student($studentId) as $c) {
-        $d = trim((string) ($c['doctor'] ?? ''));
-        if ($d !== '') $set[$d] = true;
-    }
-    $names = array_keys($set);
-    sort($names, SORT_NATURAL | SORT_FLAG_CASE);
-    return $names;
+    $map = [];
+    foreach (load_doctors() as $d) $map[(string) $d['id']] = $d;
+    return $map;
 }
 
-function student_preceptors(string $studentId): array
+function preceptors_by_id(): array
 {
-    $set = [];
-    foreach (cases_for_student($studentId) as $c) {
-        $p = trim((string) ($c['preceptor'] ?? ''));
-        if ($p !== '') $set[$p] = true;
-    }
-    $names = array_keys($set);
-    sort($names, SORT_NATURAL | SORT_FLAG_CASE);
-    return $names;
+    $map = [];
+    foreach (load_preceptors() as $p) $map[(string) $p['id']] = $p;
+    return $map;
 }
