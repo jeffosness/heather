@@ -87,3 +87,28 @@ function preceptor_case_count(string $id): int
     }
     return (int) ($counts[$id] ?? 0);
 }
+
+/**
+ * Rating aggregate for one preceptor: [avg, rating_count].
+ * Ratings of 0 are excluded (treated as unrated). Cached-per-request.
+ */
+function preceptor_rating_stats(string $id): array
+{
+    static $stats = null;
+    if ($stats === null) {
+        require_once __DIR__ . '/cases_service.php';
+        $sums = []; $counts = [];
+        foreach (load_cases() as $c) {
+            $pid = (string) ($c['preceptor_id'] ?? '');
+            if ($pid === '') continue;
+            $r = (int) ($c['preceptor_rating'] ?? 0);
+            if ($r < 1 || $r > 5) continue;
+            $sums[$pid]   = ($sums[$pid] ?? 0) + $r;
+            $counts[$pid] = ($counts[$pid] ?? 0) + 1;
+        }
+        $stats = ['sums' => $sums, 'counts' => $counts];
+    }
+    $count = (int) ($stats['counts'][$id] ?? 0);
+    $avg = $count > 0 ? round($stats['sums'][$id] / $count, 2) : 0.0;
+    return ['avg' => $avg, 'count' => $count];
+}

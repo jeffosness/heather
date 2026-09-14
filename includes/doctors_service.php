@@ -99,3 +99,29 @@ function doctor_case_count(string $id): int
     }
     return (int) ($counts[$id] ?? 0);
 }
+
+/**
+ * Rating aggregate for one doctor: [avg, rating_count].
+ * Ratings of 0 are treated as "not rated" and excluded from the average.
+ * Cached-per-request so admin pages showing every doctor don't rescan.
+ */
+function doctor_rating_stats(string $id): array
+{
+    static $stats = null;
+    if ($stats === null) {
+        require_once __DIR__ . '/cases_service.php';
+        $sums = []; $counts = [];
+        foreach (load_cases() as $c) {
+            $did = (string) ($c['doctor_id'] ?? '');
+            if ($did === '') continue;
+            $r = (int) ($c['doctor_rating'] ?? 0);
+            if ($r < 1 || $r > 5) continue;
+            $sums[$did]   = ($sums[$did] ?? 0) + $r;
+            $counts[$did] = ($counts[$did] ?? 0) + 1;
+        }
+        $stats = ['sums' => $sums, 'counts' => $counts];
+    }
+    $count = (int) ($stats['counts'][$id] ?? 0);
+    $avg = $count > 0 ? round($stats['sums'][$id] / $count, 2) : 0.0;
+    return ['avg' => $avg, 'count' => $count];
+}

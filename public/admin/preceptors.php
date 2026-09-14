@@ -39,8 +39,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $preceptors = load_preceptors();
 $counts = [];
-foreach ($preceptors as $p) $counts[(string) $p['id']] = preceptor_case_count((string) $p['id']);
-usort($preceptors, function ($a, $b) use ($counts) {
+$ratings = [];
+foreach ($preceptors as $p) {
+    $id = (string) $p['id'];
+    $counts[$id]  = preceptor_case_count($id);
+    $ratings[$id] = preceptor_rating_stats($id);
+}
+usort($preceptors, function ($a, $b) use ($counts, $ratings) {
+    $ra = $ratings[(string) $a['id']]; $rb = $ratings[(string) $b['id']];
+    $keyA = $ra['count'] > 0 ? $ra['avg'] : -1;
+    $keyB = $rb['count'] > 0 ? $rb['avg'] : -1;
+    if ($keyA !== $keyB) return $keyB <=> $keyA;
     $ca = $counts[(string) $a['id']] ?? 0;
     $cb = $counts[(string) $b['id']] ?? 0;
     if ($ca !== $cb) return $cb <=> $ca;
@@ -58,9 +67,16 @@ require_once __DIR__ . '/../../includes/admin_header.php';
 <div class="col-md-9">
     <h1 class="h4 mb-3">Preceptors</h1>
     <p class="text-muted small">
-        Supervising CSTs. Same pattern as doctors — auto-populated when students type new names,
-        rename here to normalize. Sorted by number of cases (busiest first).
+        Supervising CSTs. Auto-populated when students type new names; rename here to normalize.
+        Sorted by <strong>average rating</strong> (top rated first) so end-of-year recognition
+        candidates surface. Export the raw ratings + comments below to run through AI or share
+        highlights at the graduation ceremony.
     </p>
+    <div class="mb-3">
+        <a href="/admin/preceptor_ratings_export.php" class="btn btn-sm btn-outline-dark">
+            ⬇ Export ratings + comments (CSV)
+        </a>
+    </div>
 
     <?php if ($msg !== ''): ?>
         <div class="alert alert-info alert-dismissible fade show"><?= htmlspecialchars($msg) ?><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
@@ -85,15 +101,24 @@ require_once __DIR__ . '/../../includes/admin_header.php';
         <?php else: ?>
             <div class="table-responsive">
                 <table class="table table-striped mb-0 align-middle">
-                    <thead><tr><th>Name</th><th style="width:110px;">Cases</th><th class="text-end">Actions</th></tr></thead>
+                    <thead><tr><th>Name</th><th style="width:150px;">Avg rating</th><th style="width:110px;">Cases</th><th class="text-end">Actions</th></tr></thead>
                     <tbody>
                     <?php foreach ($preceptors as $p):
                         $pid = htmlspecialchars((string) $p['id']);
                         $n = (int) ($counts[(string) $p['id']] ?? 0);
+                        $r = $ratings[(string) $p['id']];
                     ?>
                         <tr>
                             <form method="post" id="editPre-<?= $pid ?>"></form>
                             <td><input form="editPre-<?= $pid ?>" name="name" class="form-control form-control-sm" value="<?= htmlspecialchars((string) $p['name']) ?>" required></td>
+                            <td class="small">
+                                <?php if ($r['count'] > 0): ?>
+                                    <span style="color:#f0a500;">★</span> <strong><?= number_format($r['avg'], 2) ?></strong>
+                                    <span class="text-muted">from <?= (int) $r['count'] ?></span>
+                                <?php else: ?>
+                                    <span class="text-muted">no ratings</span>
+                                <?php endif; ?>
+                            </td>
                             <td>
                                 <span class="badge <?= $n > 0 ? 'bg-primary' : 'bg-light text-dark border' ?>"><?= $n ?></span>
                             </td>

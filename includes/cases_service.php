@@ -11,7 +11,13 @@ require_once __DIR__ . '/preceptors_service.php';
  * these rows via case_progress.php.
  *
  *   { id, student_id, case_date, specialty_id, procedure,
- *     doctor_id?, preceptor_id?, role, notes, created_at, updated_at? }
+ *     doctor_id?, doctor_rating?, doctor_comment?,
+ *     preceptor_id?, preceptor_rating?, preceptor_comment?,
+ *     role, notes, created_at, updated_at? }
+ *
+ * doctor_rating / preceptor_rating are 1–5 (0 or missing = not rated).
+ * Ratings + comments are captured at case time — Heather aggregates them
+ * for end-of-year recognition (average rating + all comments per person).
  *
  * doctor_id and preceptor_id point at doctors.json / preceptors.json.
  * Case-entry forms take a free-text name (with datalist autocomplete);
@@ -80,17 +86,24 @@ function add_case(string $studentId, array $fields): ?array
     // used that name. Heather can rename or delete from admin.
     $doctorId    = find_or_create_doctor_by_name((string) ($fields['doctor']    ?? ''));
     $preceptorId = find_or_create_preceptor_by_name((string) ($fields['preceptor'] ?? ''));
+    // Ratings are 0–5 with 0 meaning "not rated." Clamp to that range.
+    $dRating = max(0, min(5, (int) ($fields['doctor_rating']    ?? 0)));
+    $pRating = max(0, min(5, (int) ($fields['preceptor_rating'] ?? 0)));
     $rec = [
-        'id'           => gen_id('c_'),
-        'student_id'   => $studentId,
-        'case_date'    => $caseDate,
-        'specialty_id' => $specialty,
-        'procedure'    => $procedure,
-        'doctor_id'    => $doctorId,
-        'preceptor_id' => $preceptorId,
-        'role'         => $role,
-        'notes'        => trim((string) ($fields['notes'] ?? '')),
-        'created_at'   => date('Y-m-d H:i:s'),
+        'id'                => gen_id('c_'),
+        'student_id'        => $studentId,
+        'case_date'         => $caseDate,
+        'specialty_id'      => $specialty,
+        'procedure'         => $procedure,
+        'doctor_id'         => $doctorId,
+        'doctor_rating'     => $dRating,
+        'doctor_comment'    => trim((string) ($fields['doctor_comment']    ?? '')),
+        'preceptor_id'      => $preceptorId,
+        'preceptor_rating'  => $pRating,
+        'preceptor_comment' => trim((string) ($fields['preceptor_comment'] ?? '')),
+        'role'              => $role,
+        'notes'             => trim((string) ($fields['notes'] ?? '')),
+        'created_at'        => date('Y-m-d H:i:s'),
     ];
     $items = load_cases();
     $items[] = $rec;
@@ -106,6 +119,10 @@ function update_case(string $id, array $fields): bool
         if (array_key_exists('procedure', $fields))    $c['procedure']    = trim((string) $fields['procedure']);
         if (array_key_exists('doctor', $fields))       $c['doctor_id']    = find_or_create_doctor_by_name((string) $fields['doctor']);
         if (array_key_exists('preceptor', $fields))    $c['preceptor_id'] = find_or_create_preceptor_by_name((string) $fields['preceptor']);
+        if (array_key_exists('doctor_rating', $fields))     $c['doctor_rating']     = max(0, min(5, (int) $fields['doctor_rating']));
+        if (array_key_exists('doctor_comment', $fields))    $c['doctor_comment']    = trim((string) $fields['doctor_comment']);
+        if (array_key_exists('preceptor_rating', $fields))  $c['preceptor_rating']  = max(0, min(5, (int) $fields['preceptor_rating']));
+        if (array_key_exists('preceptor_comment', $fields)) $c['preceptor_comment'] = trim((string) $fields['preceptor_comment']);
         if (array_key_exists('role', $fields)) {
             $r = trim((string) $fields['role']);
             if (in_array($r, CASE_ROLES, true)) $c['role'] = $r;

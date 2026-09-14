@@ -38,10 +38,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $doctors = load_doctors();
-// Attach case counts and re-sort by count desc so the busiest attendings float up.
+// Attach case counts + rating stats. Sort by avg-rating desc (with rating_count
+// ≥ 1), then by case count desc, so top-rated float up for end-of-year recognition.
 $counts = [];
-foreach ($doctors as $d) $counts[(string) $d['id']] = doctor_case_count((string) $d['id']);
-usort($doctors, function ($a, $b) use ($counts) {
+$ratings = [];
+foreach ($doctors as $d) {
+    $id = (string) $d['id'];
+    $counts[$id]  = doctor_case_count($id);
+    $ratings[$id] = doctor_rating_stats($id);
+}
+usort($doctors, function ($a, $b) use ($counts, $ratings) {
+    $ra = $ratings[(string) $a['id']]; $rb = $ratings[(string) $b['id']];
+    // Doctors with no ratings drop to the bottom of the rating sort.
+    $keyA = $ra['count'] > 0 ? $ra['avg'] : -1;
+    $keyB = $rb['count'] > 0 ? $rb['avg'] : -1;
+    if ($keyA !== $keyB) return $keyB <=> $keyA;
     $ca = $counts[(string) $a['id']] ?? 0;
     $cb = $counts[(string) $b['id']] ?? 0;
     if ($ca !== $cb) return $cb <=> $ca;
@@ -60,9 +71,15 @@ require_once __DIR__ . '/../../includes/admin_header.php';
     <h1 class="h4 mb-3">Doctors</h1>
     <p class="text-muted small">
         The master list of attending physicians. New names are added automatically when students type
-        them on a case; you can rename here to normalize (e.g. merge <em>Dr. Chen</em> and <em>Dr Chen</em>
-        by editing both to the same spelling). Sorted by number of cases (busiest first).
+        them on a case; rename here to normalize duplicates. Sorted by <strong>average rating</strong>
+        (top rated first) so end-of-year recognition candidates surface. Export the raw
+        ratings + comments below to run through AI or hand off to the graduation ceremony.
     </p>
+    <div class="mb-3">
+        <a href="/admin/doctor_ratings_export.php" class="btn btn-sm btn-outline-dark">
+            ⬇ Export ratings + comments (CSV)
+        </a>
+    </div>
 
     <?php if ($msg !== ''): ?>
         <div class="alert alert-info alert-dismissible fade show"><?= htmlspecialchars($msg) ?><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
@@ -87,15 +104,24 @@ require_once __DIR__ . '/../../includes/admin_header.php';
         <?php else: ?>
             <div class="table-responsive">
                 <table class="table table-striped mb-0 align-middle">
-                    <thead><tr><th>Name</th><th style="width:110px;">Cases</th><th class="text-end">Actions</th></tr></thead>
+                    <thead><tr><th>Name</th><th style="width:150px;">Avg rating</th><th style="width:110px;">Cases</th><th class="text-end">Actions</th></tr></thead>
                     <tbody>
                     <?php foreach ($doctors as $d):
                         $did = htmlspecialchars((string) $d['id']);
                         $n = (int) ($counts[(string) $d['id']] ?? 0);
+                        $r = $ratings[(string) $d['id']];
                     ?>
                         <tr>
                             <form method="post" id="editDoc-<?= $did ?>"></form>
                             <td><input form="editDoc-<?= $did ?>" name="name" class="form-control form-control-sm" value="<?= htmlspecialchars((string) $d['name']) ?>" required></td>
+                            <td class="small">
+                                <?php if ($r['count'] > 0): ?>
+                                    <span style="color:#f0a500;">★</span> <strong><?= number_format($r['avg'], 2) ?></strong>
+                                    <span class="text-muted">from <?= (int) $r['count'] ?></span>
+                                <?php else: ?>
+                                    <span class="text-muted">no ratings</span>
+                                <?php endif; ?>
+                            </td>
                             <td>
                                 <span class="badge <?= $n > 0 ? 'bg-primary' : 'bg-light text-dark border' ?>"><?= $n ?></span>
                             </td>

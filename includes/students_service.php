@@ -66,17 +66,39 @@ function student_username_available(string $username, string $excludeId = ''): b
 const COHORT_SEASONS = ['Fall', 'Spring', 'Summer', 'Winter'];
 
 /**
- * Human-friendly cohort label. Prefers structured season+year;
- * falls back to legacy free-text `cohort` for students created
- * before those fields existed.
+ * Effective cohort tuple. Prefers the structured cohort_season +
+ * cohort_year fields. Falls back to parsing a legacy `cohort` free-text
+ * value (e.g. "Fall 2026") for students created before the structured
+ * fields were introduced. Returns ['', 0] when nothing usable is on the
+ * record.
  */
-function student_cohort_label(array $student): string
+function student_cohort_tuple(array $student): array
 {
     $season = trim((string) ($student['cohort_season'] ?? ''));
     $year   = (int)         ($student['cohort_year']   ?? 0);
-    if ($season !== '' && $year > 0) return $season . ' ' . $year;
+    if (in_array($season, COHORT_SEASONS, true) && $year >= 2000 && $year <= 2100) {
+        return [$season, $year];
+    }
+    // Try to parse a legacy free-text cohort like "Fall 2026" / "spring 2027".
     $legacy = trim((string) ($student['cohort'] ?? ''));
-    return $legacy;
+    if ($legacy !== '' && preg_match('/^(Fall|Spring|Summer|Winter)\s+(\d{4})$/i', $legacy, $m)) {
+        return [ucfirst(strtolower($m[1])), (int) $m[2]];
+    }
+    return ['', 0];
+}
+
+/**
+ * Human-friendly cohort label. Uses the parsed tuple so legacy records
+ * still render "Fall 2026" even if their structured fields were never
+ * populated.
+ */
+function student_cohort_label(array $student): string
+{
+    [$season, $year] = student_cohort_tuple($student);
+    if ($season !== '' && $year > 0) return $season . ' ' . $year;
+    // Last resort — surface whatever legacy string exists so it's not
+    // silently invisible.
+    return trim((string) ($student['cohort'] ?? ''));
 }
 
 /**
@@ -120,8 +142,7 @@ function all_cohorts(): array
 {
     $set = [];
     foreach (load_students() as $s) {
-        $season = trim((string) ($s['cohort_season'] ?? ''));
-        $year   = (int)         ($s['cohort_year']   ?? 0);
+        [$season, $year] = student_cohort_tuple($s);
         if ($season === '' || $year === 0) continue;
         $key = $season . '|' . $year;
         $set[$key] = ['season' => $season, 'year' => $year, 'label' => $season . ' ' . $year];
