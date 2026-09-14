@@ -16,13 +16,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = (string) ($_POST['action'] ?? '');
     if ($action === 'invite') {
         $created = invite_student([
-            'name'     => (string) ($_POST['name']     ?? ''),
-            'username' => (string) ($_POST['username'] ?? ''),
-            'email'    => (string) ($_POST['email']    ?? ''),
-            'cohort'   => (string) ($_POST['cohort']   ?? ''),
+            'name'          => (string) ($_POST['name']          ?? ''),
+            'username'      => (string) ($_POST['username']      ?? ''),
+            'email'         => (string) ($_POST['email']         ?? ''),
+            'cohort_season' => (string) ($_POST['cohort_season'] ?? ''),
+            'cohort_year'   => (int)    ($_POST['cohort_year']   ?? 0),
         ]);
         if (!$created) {
-            $error = 'Fill in name, username, and email. Username must be unique.';
+            $error = 'Fill in every field. Username must be unique. Cohort season + year required.';
         } else {
             $sent = send_student_invite_email($created);
             $message = $sent
@@ -39,9 +40,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($action === 'update') {
         $id = (string) ($_POST['id'] ?? '');
         update_student($id, [
-            'name'   => (string) ($_POST['name']   ?? ''),
-            'email'  => (string) ($_POST['email']  ?? ''),
-            'cohort' => (string) ($_POST['cohort'] ?? ''),
+            'name'          => (string) ($_POST['name']          ?? ''),
+            'email'         => (string) ($_POST['email']         ?? ''),
+            'cohort_season' => (string) ($_POST['cohort_season'] ?? ''),
+            'cohort_year'   => (int)    ($_POST['cohort_year']   ?? 0),
         ]);
         $message = 'Updated.';
     } elseif ($action === 'delete') {
@@ -54,7 +56,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $students = load_students();
+$cohorts  = all_cohorts();
+$filterCohort = trim((string) ($_GET['cohort'] ?? ''));  // "Fall 2026" or ""
+if ($filterCohort !== '') {
+    $students = array_values(array_filter($students, fn($s) => student_cohort_label($s) === $filterCohort));
+}
 $msg = (string) ($_GET['msg'] ?? '');
+$defaultYear = (int) date('Y');
+
 $pageTitle = 'Students';
 $activeTopNav = 'students';
 require_once __DIR__ . '/../../includes/admin_header.php';
@@ -74,13 +83,36 @@ require_once __DIR__ . '/../../includes/admin_header.php';
                 <?php csrf_field(); ?>
                 <input type="hidden" name="action" value="invite">
                 <div class="col-md-3"><label class="form-label">Name</label><input class="form-control" type="text" name="name" required></div>
-                <div class="col-md-3"><label class="form-label">Username</label><input class="form-control" type="text" name="username" required></div>
+                <div class="col-md-2"><label class="form-label">Username</label><input class="form-control" type="text" name="username" required></div>
                 <div class="col-md-3"><label class="form-label">Email <span class="text-danger">*</span></label><input class="form-control" type="email" name="email" required></div>
-                <div class="col-md-2"><label class="form-label">Cohort <small class="text-muted">(opt.)</small></label><input class="form-control" type="text" name="cohort" placeholder="e.g. 2027"></div>
+                <div class="col-md-2">
+                    <label class="form-label">Cohort <span class="text-danger">*</span></label>
+                    <select class="form-select" name="cohort_season" required>
+                        <?php foreach (COHORT_SEASONS as $s): ?>
+                            <option value="<?= $s ?>" <?= $s === 'Fall' ? 'selected' : '' ?>><?= $s ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label">Year</label>
+                    <input class="form-control" type="number" name="cohort_year" min="2000" max="2100" value="<?= $defaultYear ?>" required>
+                </div>
                 <div class="col-md-1 d-grid"><button type="submit" class="btn btn-dark">Invite</button></div>
             </form>
         </div>
     </div>
+
+    <?php if ($cohorts !== []): ?>
+        <div class="mb-3 d-flex flex-wrap gap-2 small align-items-center">
+            <span class="text-muted">Filter by cohort:</span>
+            <a href="/admin/students.php" class="btn btn-sm <?= $filterCohort === '' ? 'btn-dark' : 'btn-outline-dark' ?>">All</a>
+            <?php foreach ($cohorts as $c): ?>
+                <a href="/admin/students.php?cohort=<?= urlencode($c['label']) ?>" class="btn btn-sm <?= $filterCohort === $c['label'] ? 'btn-dark' : 'btn-outline-dark' ?>">
+                    <?= htmlspecialchars($c['label']) ?>
+                </a>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
 
     <div class="card">
         <div class="card-header"><strong>Roster</strong> <small class="text-muted">(<?= count($students) ?>)</small></div>
@@ -95,13 +127,27 @@ require_once __DIR__ . '/../../includes/admin_header.php';
                         $sid = htmlspecialchars((string) $s['id']);
                         $hasPw = student_has_password($s);
                         $prog = progress_for_student((string) $s['id']);
+                        $sSeason = (string) ($s['cohort_season'] ?? '');
+                        $sYear   = (int)    ($s['cohort_year']   ?? 0);
                     ?>
                         <tr>
                             <form method="post" id="editStu-<?= $sid ?>"></form>
-                            <td><input form="editStu-<?= $sid ?>" name="name" class="form-control form-control-sm" value="<?= htmlspecialchars((string) $s['name']) ?>" required></td>
+                            <td>
+                                <a href="/admin/student.php?id=<?= $sid ?>" class="fw-semibold text-decoration-none"><?= htmlspecialchars((string) $s['name']) ?></a>
+                                <input form="editStu-<?= $sid ?>" name="name" type="hidden" value="<?= htmlspecialchars((string) $s['name']) ?>">
+                            </td>
                             <td class="text-muted"><?= htmlspecialchars((string) ($s['username'] ?? '')) ?></td>
                             <td><input form="editStu-<?= $sid ?>" name="email" type="email" class="form-control form-control-sm" value="<?= htmlspecialchars((string) ($s['email'] ?? '')) ?>"></td>
-                            <td><input form="editStu-<?= $sid ?>" name="cohort" class="form-control form-control-sm" style="width:90px;" value="<?= htmlspecialchars((string) ($s['cohort'] ?? '')) ?>"></td>
+                            <td>
+                                <div class="d-flex gap-1">
+                                    <select form="editStu-<?= $sid ?>" name="cohort_season" class="form-select form-select-sm" style="width:90px;">
+                                        <?php foreach (COHORT_SEASONS as $season): ?>
+                                            <option value="<?= $season ?>" <?= $sSeason === $season ? 'selected' : '' ?>><?= $season ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <input form="editStu-<?= $sid ?>" name="cohort_year" type="number" class="form-control form-control-sm" style="width:80px;" min="2000" max="2100" value="<?= $sYear ?: $defaultYear ?>">
+                                </div>
+                            </td>
                             <td class="small">
                                 <div class="d-flex align-items-center gap-2">
                                     <div class="progress flex-grow-1" style="height:6px; min-width:100px;">

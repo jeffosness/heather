@@ -20,6 +20,7 @@ define('APP_CASES_FILE',       APP_PROTECTED_DIR . DIRECTORY_SEPARATOR . 'cases.
 define('APP_SPECIALTIES_FILE', APP_PROTECTED_DIR . DIRECTORY_SEPARATOR . 'specialties.json');
 define('APP_DOCTORS_FILE',     APP_PROTECTED_DIR . DIRECTORY_SEPARATOR . 'doctors.json');
 define('APP_PRECEPTORS_FILE',  APP_PROTECTED_DIR . DIRECTORY_SEPARATOR . 'preceptors.json');
+define('APP_REQUIREMENTS_FILE',APP_PROTECTED_DIR . DIRECTORY_SEPARATOR . 'requirements.json');
 
 if (session_status() === PHP_SESSION_NONE) {
     $sessionLifetime = 30 * 24 * 60 * 60;

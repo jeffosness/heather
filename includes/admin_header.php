@@ -20,6 +20,7 @@ function admin_subnav_html(string $group, string $active): string
             ['settings',      'Site info',     '/admin/settings.php'],
             ['notifications', 'Notifications', '/admin/notifications.php'],
             ['specialties',   'Specialties',   '/admin/specialties.php'],
+            ['requirements',  'Requirements',  '/admin/requirements.php'],
             ['doctors',       'Doctors',       '/admin/doctors.php'],
             ['preceptors',    'Preceptors',    '/admin/preceptors.php'],
             ['users',         'Admin users',   '/admin/users.php'],

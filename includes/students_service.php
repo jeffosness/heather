@@ -63,25 +63,48 @@ function student_username_available(string $username, string $excludeId = ''): b
     return ($excludeId !== '' && (string) $existing['id'] === $excludeId);
 }
 
+const COHORT_SEASONS = ['Fall', 'Spring', 'Summer', 'Winter'];
+
+/**
+ * Human-friendly cohort label. Prefers structured season+year;
+ * falls back to legacy free-text `cohort` for students created
+ * before those fields existed.
+ */
+function student_cohort_label(array $student): string
+{
+    $season = trim((string) ($student['cohort_season'] ?? ''));
+    $year   = (int)         ($student['cohort_year']   ?? 0);
+    if ($season !== '' && $year > 0) return $season . ' ' . $year;
+    $legacy = trim((string) ($student['cohort'] ?? ''));
+    return $legacy;
+}
+
 /**
  * Invite a new student — creates the record without a password. Caller
  * is expected to send_student_invite_email() after this returns.
+ *
+ * cohort_season + cohort_year are required (Heather needs to report on
+ * class-by-class progress). Season must be one of COHORT_SEASONS.
  */
 function invite_student(array $fields): ?array
 {
     $username = strtolower(trim((string) ($fields['username'] ?? '')));
     $name  = trim((string) ($fields['name']  ?? ''));
     $email = trim((string) ($fields['email'] ?? ''));
-    $cohort= trim((string) ($fields['cohort'] ?? ''));
+    $season= trim((string) ($fields['cohort_season'] ?? ''));
+    $year  = (int)         ($fields['cohort_year']   ?? 0);
     if ($username === '' || $name === '' || $email === '') return null;
+    if (!in_array($season, COHORT_SEASONS, true)) return null;
+    if ($year < 2000 || $year > 2100) return null;
     if (!student_username_available($username)) return null;
     $student = [
-        'id'         => gen_id('st_'),
-        'name'       => $name,
-        'username'   => $username,
-        'email'      => $email,
-        'cohort'     => $cohort,
-        'created_at' => date('Y-m-d H:i:s'),
+        'id'            => gen_id('st_'),
+        'name'          => $name,
+        'username'      => $username,
+        'email'         => $email,
+        'cohort_season' => $season,
+        'cohort_year'   => $year,
+        'created_at'    => date('Y-m-d H:i:s'),
     ];
     $items = load_students();
     $items[] = $student;
@@ -89,12 +112,44 @@ function invite_student(array $fields): ?array
     return $student;
 }
 
+/**
+ * All distinct cohort tuples that show up on any student, newest first.
+ * Used for admin filters and reports.
+ */
+function all_cohorts(): array
+{
+    $set = [];
+    foreach (load_students() as $s) {
+        $season = trim((string) ($s['cohort_season'] ?? ''));
+        $year   = (int)         ($s['cohort_year']   ?? 0);
+        if ($season === '' || $year === 0) continue;
+        $key = $season . '|' . $year;
+        $set[$key] = ['season' => $season, 'year' => $year, 'label' => $season . ' ' . $year];
+    }
+    $items = array_values($set);
+    // Sort by year desc, then season order (Fall before Spring — sort by
+    // COHORT_SEASONS index desc).
+    $seasonRank = array_flip(COHORT_SEASONS);
+    usort($items, function ($a, $b) use ($seasonRank) {
+        if ($a['year'] !== $b['year']) return $b['year'] <=> $a['year'];
+        return ($seasonRank[$a['season']] ?? 0) <=> ($seasonRank[$b['season']] ?? 0);
+    });
+    return $items;
+}
+
 function update_student(string $id, array $fields): bool
 {
     return update_record_by_id(APP_STUDENTS_FILE, $id, function (array &$s) use ($fields) {
         if (array_key_exists('name', $fields))   $s['name']   = trim((string) $fields['name']);
         if (array_key_exists('email', $fields))  $s['email']  = trim((string) $fields['email']);
-        if (array_key_exists('cohort', $fields)) $s['cohort'] = trim((string) $fields['cohort']);
+        if (array_key_exists('cohort_season', $fields)) {
+            $v = trim((string) $fields['cohort_season']);
+            if (in_array($v, COHORT_SEASONS, true)) $s['cohort_season'] = $v;
+        }
+        if (array_key_exists('cohort_year', $fields)) {
+            $v = (int) $fields['cohort_year'];
+            if ($v >= 2000 && $v <= 2100) $s['cohort_year'] = $v;
+        }
         if (!empty($fields['password'])) {
             $s['password_hash'] = password_hash((string) $fields['password'], PASSWORD_DEFAULT);
         }

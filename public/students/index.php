@@ -4,11 +4,13 @@ require_once __DIR__ . '/../../includes/bootstrap.php';
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/student_auth.php';
 require_once __DIR__ . '/../../includes/case_progress.php';
+require_once __DIR__ . '/../../includes/requirements_service.php';
 
 require_student();
 
 $student = current_student();
 $progress = progress_for_student((string) $student['id']);
+$reqReport = requirements_for_student((string) $student['id']);
 
 $pageTitle = 'Progress';
 $activeNav = 'progress';
@@ -80,6 +82,39 @@ function wheel_html(int $have, int $need, string $labelLine): string
             </div>
         </div>
     <?php endforeach; ?>
+
+    <?php if ($reqReport !== []): ?>
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <strong>Program requirements</strong>
+                <?php $metCount = 0; foreach ($reqReport as $r) if ($r['met']) $metCount++; ?>
+                <span class="badge <?= $metCount === count($reqReport) ? 'bg-success' : 'bg-warning text-dark' ?>">
+                    <?= $metCount ?> of <?= count($reqReport) ?> met
+                </span>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted mb-3">
+                    These are on top of the CST 7e minimums above — specific cases your program requires
+                    before graduation.
+                </p>
+                <div class="row g-2">
+                    <?php foreach ($reqReport as $r):
+                        $pct = $r['need'] > 0 ? min(100, ($r['have'] / $r['need']) * 100) : 0;
+                    ?>
+                        <div class="col-12 col-md-6">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="small"><?= htmlspecialchars($r['label']) ?></span>
+                                <span class="small text-muted"><?= (int) $r['have'] ?> / <?= (int) $r['need'] ?> <?= $r['met'] ? '✓' : '' ?></span>
+                            </div>
+                            <div class="progress" style="height:6px;">
+                                <div class="progress-bar <?= $r['met'] ? 'bg-success' : '' ?>" style="width: <?= $pct ?>%;"></div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
 
     <div class="card mb-3">
         <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
