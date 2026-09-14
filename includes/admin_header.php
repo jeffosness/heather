@@ -19,7 +19,8 @@ function admin_subnav_html(string $group, string $active): string
         'settings' => [
             ['settings',      'Site info',     '/admin/settings.php'],
             ['notifications', 'Notifications', '/admin/notifications.php'],
-            ['users',         'Users',         '/admin/users.php'],
+            ['specialties',   'Specialties',   '/admin/specialties.php'],
+            ['users',         'Admin users',   '/admin/users.php'],
         ],
     ];
     if (!isset($groups[$group])) return '';
@@ -69,6 +70,7 @@ function admin_subnav_html(string $group, string $active): string
             <?php
             $topNav = [
                 ['dashboard', 'Dashboard',       '/admin/'],
+                ['students',  'Students',        '/admin/students.php'],
                 ['feedback',  'Change requests', '/admin/feedback.php'],
                 ['settings',  'Settings',        '/admin/settings.php'],
             ];

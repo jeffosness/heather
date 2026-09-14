@@ -23,6 +23,10 @@ require_once __DIR__ . '/../includes/public_header.php';
         This is Heather's corner of the internet — a playground for good ideas.
         More coming soon.
     </p>
+    <div class="mt-4">
+        <a href="/students/" class="btn btn-plum btn-lg">Surgical Tech Case Log →</a>
+        <div class="small text-muted mt-2">For students in Heather's surgical technology program.</div>
+    </div>
 </div>
 
 <?php require_once __DIR__ . '/../includes/public_footer.php'; ?>

@@ -15,6 +15,9 @@ define('APP_UPLOADS_DIR',    dirname($protectedDir) . DIRECTORY_SEPARATOR . 'upl
 define('APP_SETTINGS_FILE',  APP_PROTECTED_DIR . DIRECTORY_SEPARATOR . 'settings.json');
 define('APP_USERS_FILE',     APP_PROTECTED_DIR . DIRECTORY_SEPARATOR . 'users.json');
 define('APP_FEEDBACK_FILE',  APP_PROTECTED_DIR . DIRECTORY_SEPARATOR . 'feedback.json');
+define('APP_STUDENTS_FILE',    APP_PROTECTED_DIR . DIRECTORY_SEPARATOR . 'students.json');
+define('APP_CASES_FILE',       APP_PROTECTED_DIR . DIRECTORY_SEPARATOR . 'cases.json');
+define('APP_SPECIALTIES_FILE', APP_PROTECTED_DIR . DIRECTORY_SEPARATOR . 'specialties.json');
 
 if (session_status() === PHP_SESSION_NONE) {
     $sessionLifetime = 30 * 24 * 60 * 60;

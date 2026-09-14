@@ -10,10 +10,15 @@ if (no_users_yet()) {
 
 require_login();
 require_once __DIR__ . '/../../includes/feedback_service.php';
+require_once __DIR__ . '/../../includes/students_service.php';
+require_once __DIR__ . '/../../includes/cases_service.php';
 
 $settings = app_settings();
 $me = current_user();
 $feedback = load_feedback();
+$students = load_students();
+$pendingStudents = count(array_filter($students, fn($s) => !student_has_password($s)));
+$totalCases = count(load_cases());
 
 $pageTitle = 'Dashboard';
 $activeTopNav = 'dashboard';
@@ -24,6 +29,20 @@ require_once __DIR__ . '/../../includes/admin_header.php';
     <p class="text-muted mb-4">This is your playground. Fresh, quiet — ready for whatever you want to build here.</p>
 
     <div class="row g-3">
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 <?= $pendingStudents > 0 ? 'border-warning' : '' ?>">
+                <div class="card-body">
+                    <div class="text-muted small">Students</div>
+                    <div class="h2 mb-0"><?= count($students) ?></div>
+                    <?php if ($pendingStudents > 0): ?>
+                        <div class="small text-warning-emphasis"><?= $pendingStudents ?> pending invite<?= $pendingStudents === 1 ? '' : 's' ?></div>
+                    <?php elseif ($totalCases > 0): ?>
+                        <div class="small text-muted"><?= $totalCases ?> case<?= $totalCases === 1 ? '' : 's' ?> logged</div>
+                    <?php endif; ?>
+                    <a href="/admin/students.php" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
         <div class="col-md-6 col-lg-4">
             <div class="card h-100">
                 <div class="card-body">
@@ -36,18 +55,9 @@ require_once __DIR__ . '/../../includes/admin_header.php';
         <div class="col-md-6 col-lg-4">
             <div class="card h-100">
                 <div class="card-body">
-                    <div class="text-muted small">Site settings</div>
-                    <div class="h5 mb-0 mt-1">Name, tagline, GitHub</div>
+                    <div class="text-muted small">Settings</div>
+                    <div class="h5 mb-0 mt-1">Notifications, specialties, admins</div>
                     <a href="/admin/settings.php" class="stretched-link"></a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6 col-lg-4">
-            <div class="card h-100">
-                <div class="card-body">
-                    <div class="text-muted small">Admin users</div>
-                    <div class="h5 mb-0 mt-1">Manage accounts</div>
-                    <a href="/admin/users.php" class="stretched-link"></a>
                 </div>
             </div>
         </div>

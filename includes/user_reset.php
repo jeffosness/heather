@@ -128,3 +128,62 @@ function send_invite_email(array $user): bool
           . "The link works for 7 days. Your username is: " . (string) ($user['username'] ?? '') . "\n";
     return notify_send_one($email, "You're invited to " . $host, $body, 'invite');
 }
+
+/**
+ * Student-side twin of send_invite_email. Uses the students table
+ * and points the invite link at /students/set_password.php so the
+ * flow lives entirely inside the student portal.
+ */
+function send_student_invite_email(array $student): bool
+{
+    require_once __DIR__ . '/students_service.php';
+    $email = trim((string) ($student['email'] ?? ''));
+    if ($email === '') return false;
+
+    $token = bin2hex(random_bytes(32));
+    $expires = time() + INVITE_TTL_SECONDS;
+    update_student((string) $student['id'], [
+        'reset_token'         => $token,
+        'reset_token_expires' => $expires,
+    ]);
+
+    $host = $_SERVER['HTTP_HOST'] ?? 'heather.osness.org';
+    $link = 'https://' . $host . '/students/set_password.php?token=' . urlencode($token);
+    $body = "Hi " . (string) ($student['name'] ?? '') . ",\n\n"
+          . "You've been enrolled in the Surgical Technology case-log tracker at " . $host . ".\n\n"
+          . "Click this link to set your password and get started:\n\n"
+          . $link . "\n\n"
+          . "The link works for 7 days. Your username is: " . (string) ($student['username'] ?? '') . "\n";
+    return notify_send_one($email, "Welcome to the case log — set your password", $body, 'student_invite');
+}
+
+/**
+ * Same reset flow but for a student token. Looks up in the students
+ * table.
+ */
+function consume_student_reset_token(string $token): ?array
+{
+    require_once __DIR__ . '/students_service.php';
+    $token = trim($token);
+    if ($token === '' || strlen($token) < 32) return null;
+    foreach (load_students() as $s) {
+        $storedToken = (string) ($s['reset_token'] ?? '');
+        if ($storedToken === '' || !hash_equals($storedToken, $token)) continue;
+        $expires = (int) ($s['reset_token_expires'] ?? 0);
+        if ($expires < time()) return null;
+        return $s;
+    }
+    return null;
+}
+
+function apply_student_password_reset(string $token, string $newPassword): bool
+{
+    if (strlen($newPassword) < 8) return false;
+    $student = consume_student_reset_token($token);
+    if (!$student) return false;
+    return update_record_by_id(APP_STUDENTS_FILE, (string) $student['id'], function (array &$s) use ($newPassword) {
+        $s['password_hash']       = password_hash($newPassword, PASSWORD_DEFAULT);
+        $s['reset_token']         = '';
+        $s['reset_token_expires'] = 0;
+    });
+}
