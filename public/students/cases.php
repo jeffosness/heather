@@ -18,13 +18,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = (string) ($_POST['action'] ?? '');
     if ($action === 'add') {
         $created = add_case($studentId, [
-            'case_date'    => (string) ($_POST['case_date']    ?? ''),
-            'specialty_id' => (string) ($_POST['specialty_id'] ?? ''),
-            'procedure'    => (string) ($_POST['procedure']    ?? ''),
-            'doctor'       => (string) ($_POST['doctor']       ?? ''),
-            'preceptor'    => (string) ($_POST['preceptor']    ?? ''),
-            'role'         => (string) ($_POST['role']         ?? ''),
-            'notes'        => (string) ($_POST['notes']        ?? ''),
+            'case_date'         => (string) ($_POST['case_date']         ?? ''),
+            'specialty_id'      => (string) ($_POST['specialty_id']      ?? ''),
+            'procedure'         => (string) ($_POST['procedure']         ?? ''),
+            'doctor'            => (string) ($_POST['doctor']            ?? ''),
+            'doctor_rating'     => (int)    ($_POST['doctor_rating']     ?? 0),
+            'doctor_comment'    => (string) ($_POST['doctor_comment']    ?? ''),
+            'preceptor'         => (string) ($_POST['preceptor']         ?? ''),
+            'preceptor_rating'  => (int)    ($_POST['preceptor_rating']  ?? 0),
+            'preceptor_comment' => (string) ($_POST['preceptor_comment'] ?? ''),
+            'role'              => (string) ($_POST['role']              ?? ''),
+            'notes'             => (string) ($_POST['notes']             ?? ''),
         ]);
         $message = $created ? 'Case logged.' : '';
         if (!$created) $error = 'Fill in date, specialty, procedure, and role.';
@@ -35,13 +39,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'Case not found.';
         } else {
             update_case($id, [
-                'case_date'    => (string) ($_POST['case_date']    ?? ''),
-                'specialty_id' => (string) ($_POST['specialty_id'] ?? ''),
-                'procedure'    => (string) ($_POST['procedure']    ?? ''),
-                'doctor'       => (string) ($_POST['doctor']       ?? ''),
-                'preceptor'    => (string) ($_POST['preceptor']    ?? ''),
-                'role'         => (string) ($_POST['role']         ?? ''),
-                'notes'        => (string) ($_POST['notes']        ?? ''),
+                'case_date'         => (string) ($_POST['case_date']         ?? ''),
+                'specialty_id'      => (string) ($_POST['specialty_id']      ?? ''),
+                'procedure'         => (string) ($_POST['procedure']         ?? ''),
+                'doctor'            => (string) ($_POST['doctor']            ?? ''),
+                'doctor_rating'     => (int)    ($_POST['doctor_rating']     ?? 0),
+                'doctor_comment'    => (string) ($_POST['doctor_comment']    ?? ''),
+                'preceptor'         => (string) ($_POST['preceptor']         ?? ''),
+                'preceptor_rating'  => (int)    ($_POST['preceptor_rating']  ?? 0),
+                'preceptor_comment' => (string) ($_POST['preceptor_comment'] ?? ''),
+                'role'              => (string) ($_POST['role']              ?? ''),
+                'notes'             => (string) ($_POST['notes']             ?? ''),
             ]);
             $message = 'Case updated.';
         }
