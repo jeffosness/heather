@@ -1,0 +1,13 @@
+# Runtime data — lives only on the server, never in git.
+protected/heather/*
+!protected/heather/.gitkeep
+protected/uploads/
+
+# Editor / OS junk
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local ad-hoc scripts (parity with the other IONOS projects)
+tools/
