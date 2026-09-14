@@ -115,6 +115,16 @@ function update_user(string $id, array $fields): bool
         if (array_key_exists('last_login_at', $fields)) {
             $u['last_login_at'] = (string) $fields['last_login_at'];
         }
+        // Password reset / invite tokens. Without this branch, send_invite_email
+        // and request_password_reset generate a token, "save" it, but the
+        // update silently drops both fields — so every link points at a
+        // token that lives nowhere and shows up as "invalid or expired."
+        if (array_key_exists('reset_token', $fields)) {
+            $u['reset_token'] = (string) $fields['reset_token'];
+        }
+        if (array_key_exists('reset_token_expires', $fields)) {
+            $u['reset_token_expires'] = (int) $fields['reset_token_expires'];
+        }
     });
 }
 
