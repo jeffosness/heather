@@ -3,6 +3,8 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../includes/bootstrap.php';
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/preceptors_service.php';
+require_once __DIR__ . '/../../includes/cases_service.php';
+require_once __DIR__ . '/../../includes/students_service.php';
 
 require_login();
 
@@ -37,16 +39,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-$preceptors = load_preceptors();
-$counts = [];
-$ratings = [];
-foreach ($preceptors as $p) {
-    $id = (string) $p['id'];
-    $counts[$id]  = preceptor_case_count($id);
-    $ratings[$id] = preceptor_rating_stats($id);
+// Cohort scope — see admin/doctors.php for the same reasoning: keep
+// year-over-year ratings separate so recognition candidates don't
+// inherit last cohort's numbers.
+$cohorts = all_cohorts();
+$cohortSel = trim((string) ($_GET['cohort'] ?? ''));
+if ($cohortSel === '' && $cohorts !== []) $cohortSel = $cohorts[0]['label'];
+$cohortAll = $cohortSel === '__all__';
+if ($cohortAll) {
+    $filteredCases = load_cases();
+    $scopeLabel = 'All cohorts';
+    $scopeQuery = 'cohort=__all__';
+} elseif ($cohortSel !== '') {
+    $filteredCases = cases_for_cohort($cohortSel);
+    $scopeLabel = $cohortSel;
+    $scopeQuery = 'cohort=' . urlencode($cohortSel);
+} else {
+    $filteredCases = load_cases();
+    $scopeLabel = 'All cohorts';
+    $scopeQuery = 'cohort=__all__';
 }
+
+$counts  = case_count_by_person($filteredCases, 'preceptor_id');
+$ratings = rating_stats_by_person($filteredCases, 'preceptor_rating', 'preceptor_id');
+$preceptors = load_preceptors();
+
 usort($preceptors, function ($a, $b) use ($counts, $ratings) {
-    $ra = $ratings[(string) $a['id']]; $rb = $ratings[(string) $b['id']];
+    $ra = $ratings[(string) $a['id']] ?? ['avg' => 0.0, 'count' => 0];
+    $rb = $ratings[(string) $b['id']] ?? ['avg' => 0.0, 'count' => 0];
     $keyA = $ra['count'] > 0 ? $ra['avg'] : -1;
     $keyB = $rb['count'] > 0 ? $rb['avg'] : -1;
     if ($keyA !== $keyB) return $keyB <=> $keyA;
@@ -68,14 +88,27 @@ require_once __DIR__ . '/../../includes/admin_header.php';
     <h1 class="h4 mb-3">Preceptors</h1>
     <p class="text-muted small">
         Supervising CSTs. Auto-populated when students type new names; rename here to normalize.
-        Sorted by <strong>average rating</strong> (top rated first) so end-of-year recognition
-        candidates surface. Export the raw ratings + comments below to run through AI or share
-        highlights at the graduation ceremony.
+        Ratings + case counts below reflect the <strong>selected cohort</strong> only, so
+        year-over-year data stays separate.
     </p>
-    <div class="mb-3">
-        <a href="/admin/preceptor_ratings_export.php" class="btn btn-sm btn-outline-dark">
+
+    <?php if ($cohorts !== []): ?>
+        <div class="mb-3 d-flex flex-wrap gap-2 small align-items-center">
+            <span class="text-muted">Cohort:</span>
+            <?php foreach ($cohorts as $c): ?>
+                <a href="?cohort=<?= urlencode($c['label']) ?>" class="btn btn-sm <?= $cohortSel === $c['label'] ? 'btn-dark' : 'btn-outline-dark' ?>">
+                    <?= htmlspecialchars($c['label']) ?>
+                </a>
+            <?php endforeach; ?>
+            <a href="?cohort=__all__" class="btn btn-sm <?= $cohortAll ? 'btn-dark' : 'btn-outline-dark' ?>">All time</a>
+        </div>
+    <?php endif; ?>
+
+    <div class="mb-3 d-flex gap-2 flex-wrap align-items-center">
+        <a href="/admin/preceptor_ratings_export.php?<?= htmlspecialchars($scopeQuery) ?>" class="btn btn-sm btn-outline-dark">
             ⬇ Export ratings + comments (CSV)
         </a>
+        <span class="small text-muted">Scope: <strong><?= htmlspecialchars($scopeLabel) ?></strong></span>
     </div>
 
     <?php if ($msg !== ''): ?>

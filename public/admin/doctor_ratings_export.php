@@ -11,8 +11,21 @@ require_login();
 
 // CSV of every case that has a doctor_rating set. One row per rating,
 // so AI can group by doctor and pull out signal + memorable comments.
+//
+// Scoped by cohort so year-over-year winners are picked from their own
+// year's data — ?cohort=Fall%202026 filters to that cohort, ?cohort=__all__
+// exports lifetime.
 
-$cases        = load_cases();
+$cohortParam = trim((string) ($_GET['cohort'] ?? ''));
+if ($cohortParam === '' || $cohortParam === '__all__') {
+    $cases = load_cases();
+    $cohortSlug = 'all';
+    $cohortLabelForFile = 'all';
+} else {
+    $cases = cases_for_cohort($cohortParam);
+    $cohortSlug = strtolower(preg_replace('/[^a-z0-9]+/i', '_', $cohortParam));
+    $cohortLabelForFile = $cohortSlug;
+}
 $doctorById   = doctors_by_id();
 $studentsById = [];
 foreach (load_students() as $s) $studentsById[(string) $s['id']] = $s;
@@ -28,7 +41,7 @@ foreach ($cases as $c) {
     $rows[] = $c;
 }
 
-$filename = 'doctor_ratings_' . date('Y-m-d') . '.csv';
+$filename = 'doctor_ratings_' . $cohortLabelForFile . '_' . date('Y-m-d') . '.csv';
 header('Content-Type: text/csv; charset=utf-8');
 header('Content-Disposition: attachment; filename="' . $filename . '"');
 

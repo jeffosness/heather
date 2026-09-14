@@ -10,8 +10,16 @@ require_once __DIR__ . '/../../includes/specialties_service.php';
 require_login();
 
 // Mirror of doctor_ratings_export.php but for preceptors.
+// Scoped by ?cohort= so year-over-year data doesn't mix.
 
-$cases        = load_cases();
+$cohortParam = trim((string) ($_GET['cohort'] ?? ''));
+if ($cohortParam === '' || $cohortParam === '__all__') {
+    $cases = load_cases();
+    $cohortLabelForFile = 'all';
+} else {
+    $cases = cases_for_cohort($cohortParam);
+    $cohortLabelForFile = strtolower(preg_replace('/[^a-z0-9]+/i', '_', $cohortParam));
+}
 $preceptorById= preceptors_by_id();
 $studentsById = [];
 foreach (load_students() as $s) $studentsById[(string) $s['id']] = $s;
@@ -25,7 +33,7 @@ foreach ($cases as $c) {
     $rows[] = $c;
 }
 
-$filename = 'preceptor_ratings_' . date('Y-m-d') . '.csv';
+$filename = 'preceptor_ratings_' . $cohortLabelForFile . '_' . date('Y-m-d') . '.csv';
 header('Content-Type: text/csv; charset=utf-8');
 header('Content-Disposition: attachment; filename="' . $filename . '"');
 

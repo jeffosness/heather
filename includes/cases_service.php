@@ -155,3 +155,61 @@ function preceptors_by_id(): array
     foreach (load_preceptors() as $p) $map[(string) $p['id']] = $p;
     return $map;
 }
+
+/**
+ * All cases belonging to any student whose cohort label matches.
+ * Cohort label format is "Fall 2026" — same shape student_cohort_label()
+ * returns. Empty label → returns [].
+ */
+function cases_for_cohort(string $cohortLabel): array
+{
+    require_once __DIR__ . '/students_service.php';
+    $label = trim($cohortLabel);
+    if ($label === '') return [];
+    $studentIds = [];
+    foreach (load_students() as $s) {
+        if (student_cohort_label($s) === $label) $studentIds[(string) $s['id']] = true;
+    }
+    if ($studentIds === []) return [];
+    return array_values(array_filter(load_cases(), fn($c) => isset($studentIds[(string) ($c['student_id'] ?? '')])));
+}
+
+/**
+ * Aggregate ratings across a supplied case list, grouped by whichever
+ * person field the caller cares about ('doctor_id' or 'preceptor_id').
+ * Ratings of 0 (or missing / out-of-range) are excluded — those mean
+ * "student didn't rate this one." Returns [personId => {sum, count, avg}].
+ */
+function rating_stats_by_person(array $cases, string $ratingField, string $personIdField): array
+{
+    $stats = [];
+    foreach ($cases as $c) {
+        $pid = (string) ($c[$personIdField] ?? '');
+        if ($pid === '') continue;
+        $r = (int) ($c[$ratingField] ?? 0);
+        if ($r < 1 || $r > 5) continue;
+        if (!isset($stats[$pid])) $stats[$pid] = ['sum' => 0, 'count' => 0, 'avg' => 0.0];
+        $stats[$pid]['sum']   += $r;
+        $stats[$pid]['count']++;
+    }
+    foreach ($stats as &$s) {
+        $s['avg'] = $s['count'] > 0 ? round($s['sum'] / $s['count'], 2) : 0.0;
+    }
+    unset($s);
+    return $stats;
+}
+
+/**
+ * Count of cases per person, across the supplied case list.
+ * Returns [personId => int]. Missing / empty ids are skipped.
+ */
+function case_count_by_person(array $cases, string $personIdField): array
+{
+    $counts = [];
+    foreach ($cases as $c) {
+        $pid = (string) ($c[$personIdField] ?? '');
+        if ($pid === '') continue;
+        $counts[$pid] = ($counts[$pid] ?? 0) + 1;
+    }
+    return $counts;
+}
