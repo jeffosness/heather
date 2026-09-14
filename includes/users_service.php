@@ -68,6 +68,42 @@ function add_user(array $fields): ?array
     return $user;
 }
 
+/**
+ * Invite a new admin without setting a password. The invitee gets a
+ * one-time link to /reset_password.php via send_invite_email() and
+ * chooses their own password on first click. Requires an email — no
+ * email means no way to send the link.
+ *
+ * Caller is expected to send_invite_email($user) after this returns.
+ */
+function invite_user(array $fields): ?array
+{
+    $username = strtolower(trim((string) ($fields['username'] ?? '')));
+    $name  = trim((string) ($fields['name']  ?? ''));
+    $email = trim((string) ($fields['email'] ?? ''));
+    if ($username === '' || $name === '' || $email === '') return null;
+    if (!username_available($username)) return null;
+    $user = [
+        'id'         => gen_id('u_'),
+        'username'   => $username,
+        'name'       => $name,
+        'email'      => $email,
+        // No password_hash yet — set when the invitee clicks the link.
+        // attempt_login() already refuses users with an empty hash, so
+        // there's no window where the account is passwordless-but-loggable.
+        'created_at' => date('Y-m-d H:i:s'),
+    ];
+    $users = load_users();
+    $users[] = $user;
+    if (!save_users($users)) return null;
+    return $user;
+}
+
+function user_has_password(array $user): bool
+{
+    return trim((string) ($user['password_hash'] ?? '')) !== '';
+}
+
 function update_user(string $id, array $fields): bool
 {
     return update_record_by_id(APP_USERS_FILE, $id, function (array &$u) use ($fields) {

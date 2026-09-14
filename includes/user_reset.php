@@ -29,6 +29,7 @@ require_once __DIR__ . '/notifications.php';
  */
 
 const PASSWORD_RESET_TTL_SECONDS = 3600; // 1 hour
+const INVITE_TTL_SECONDS         = 7 * 24 * 3600; // 7 days — invites need slack for people to notice the email
 
 function request_password_reset(string $usernameOrEmail): void
 {
@@ -94,4 +95,36 @@ function apply_password_reset(string $token, string $newPassword): bool
         $u['reset_token'] = '';
         $u['reset_token_expires'] = 0;
     });
+}
+
+/**
+ * Generate a fresh invite token for a user (who typically has no
+ * password_hash yet), stamp it on the record, email them a link to
+ * set their password. Reuses the reset_token fields — the /reset_password.php
+ * page auto-detects "invite mode" via empty password_hash and switches
+ * its copy accordingly.
+ *
+ * Safe to call again to resend the invite — replaces the previous token
+ * so old links stop working.
+ */
+function send_invite_email(array $user): bool
+{
+    $email = trim((string) ($user['email'] ?? ''));
+    if ($email === '') return false;
+
+    $token = bin2hex(random_bytes(32));
+    $expires = time() + INVITE_TTL_SECONDS;
+    update_user((string) $user['id'], [
+        'reset_token'         => $token,
+        'reset_token_expires' => $expires,
+    ]);
+
+    $host = $_SERVER['HTTP_HOST'] ?? 'heather.osness.org';
+    $link = 'https://' . $host . '/reset_password.php?token=' . urlencode($token);
+    $body = "Hi " . (string) ($user['name'] ?? '') . ",\n\n"
+          . "You've been invited to " . $host . ".\n\n"
+          . "Click this link to set your password and get started:\n\n"
+          . $link . "\n\n"
+          . "The link works for 7 days. Your username is: " . (string) ($user['username'] ?? '') . "\n";
+    return notify_send_one($email, "You're invited to " . $host, $body, 'invite');
 }

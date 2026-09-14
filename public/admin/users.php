@@ -2,6 +2,7 @@
 declare(strict_types=1);
 require_once __DIR__ . '/../../includes/bootstrap.php';
 require_once __DIR__ . '/../../includes/auth.php';
+require_once __DIR__ . '/../../includes/user_reset.php';
 
 require_login();
 
@@ -13,15 +14,29 @@ $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_check();
     $action = (string) ($_POST['action'] ?? '');
-    if ($action === 'add') {
-        $created = add_user([
+    if ($action === 'invite') {
+        $created = invite_user([
             'username' => (string) ($_POST['username'] ?? ''),
             'name'     => (string) ($_POST['name']     ?? ''),
             'email'    => (string) ($_POST['email']    ?? ''),
-            'password' => (string) ($_POST['password'] ?? ''),
         ]);
-        if ($created) $message = 'Added ' . $created['name'] . '.';
-        else $error = 'Fill in every field and use a unique username.';
+        if (!$created) {
+            $error = 'Fill in name, username, and email. Username must be unique.';
+        } else {
+            $sent = send_invite_email($created);
+            $message = $sent
+                ? 'Invited ' . $created['name'] . ' — an invite link is on its way to ' . $created['email'] . '.'
+                : 'Created ' . $created['name'] . ' but the invite email failed to send. Check Settings → Notifications.';
+        }
+    } elseif ($action === 'resend_invite') {
+        $id = (string) ($_POST['id'] ?? '');
+        $u = find_user($id);
+        if ($u) {
+            $sent = send_invite_email($u);
+            $message = $sent
+                ? 'Fresh invite link sent to ' . $u['email'] . '.'
+                : 'Invite email failed to send. Check Settings → Notifications.';
+        }
     } elseif ($action === 'update') {
         $id = (string) ($_POST['id'] ?? '');
         $fields = [
@@ -59,16 +74,19 @@ require_once __DIR__ . '/../../includes/admin_header.php';
     <?php endif; ?>
 
     <div class="card mb-3">
-        <div class="card-header"><strong>Add user</strong></div>
+        <div class="card-header"><strong>Invite a new admin</strong></div>
         <div class="card-body">
+            <p class="small text-muted mb-3">
+                We'll email them a one-time link to set their own password. No temp password to
+                pass around. The link works for 7 days.
+            </p>
             <form method="post" class="row g-2 align-items-end">
                 <?php csrf_field(); ?>
-                <input type="hidden" name="action" value="add">
-                <div class="col-md-3"><label class="form-label">Name</label><input class="form-control" type="text" name="name" required></div>
+                <input type="hidden" name="action" value="invite">
+                <div class="col-md-4"><label class="form-label">Name</label><input class="form-control" type="text" name="name" required></div>
                 <div class="col-md-3"><label class="form-label">Username</label><input class="form-control" type="text" name="username" required></div>
-                <div class="col-md-3"><label class="form-label">Email</label><input class="form-control" type="email" name="email"></div>
-                <div class="col-md-2"><label class="form-label">Password</label><input class="form-control" type="text" name="password" required minlength="8"></div>
-                <div class="col-md-1 d-grid"><button type="submit" class="btn btn-dark">Add</button></div>
+                <div class="col-md-4"><label class="form-label">Email <span class="text-danger">*</span></label><input class="form-control" type="email" name="email" required></div>
+                <div class="col-md-1 d-grid"><button type="submit" class="btn btn-dark">Invite</button></div>
             </form>
         </div>
     </div>
@@ -77,21 +95,40 @@ require_once __DIR__ . '/../../includes/admin_header.php';
         <div class="card-header"><strong>All users</strong> <small class="text-muted">(<?= count($users) ?>)</small></div>
         <div class="table-responsive">
             <table class="table table-striped mb-0 align-middle">
-                <thead><tr><th>Name</th><th>Username</th><th>Email</th><th>Last login</th><th class="text-end">Actions</th></tr></thead>
+                <thead><tr><th>Name</th><th>Username</th><th>Email</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
                 <tbody>
-                <?php foreach ($users as $u): $uid = htmlspecialchars((string) $u['id']); ?>
+                <?php foreach ($users as $u):
+                    $uid = htmlspecialchars((string) $u['id']);
+                    $hasPassword = user_has_password($u);
+                ?>
                     <tr>
                         <form method="post" id="editUserForm-<?= $uid ?>"></form>
                         <td><input form="editUserForm-<?= $uid ?>" name="name" class="form-control form-control-sm" value="<?= htmlspecialchars((string) $u['name']) ?>" required></td>
                         <td class="text-muted"><?= htmlspecialchars((string) ($u['username'] ?? '')) ?></td>
                         <td><input form="editUserForm-<?= $uid ?>" name="email" type="email" class="form-control form-control-sm" value="<?= htmlspecialchars((string) ($u['email'] ?? '')) ?>"></td>
-                        <td class="small text-muted"><?= htmlspecialchars((string) ($u['last_login_at'] ?? '—')) ?></td>
+                        <td class="small">
+                            <?php if (!$hasPassword): ?>
+                                <span class="badge bg-warning text-dark">Pending invite</span>
+                            <?php elseif (!empty($u['last_login_at'])): ?>
+                                <span class="text-muted">last: <?= htmlspecialchars(substr((string) $u['last_login_at'], 0, 10)) ?></span>
+                            <?php else: ?>
+                                <span class="text-muted">Never signed in</span>
+                            <?php endif; ?>
+                        </td>
                         <td class="text-end text-nowrap">
                             <input form="editUserForm-<?= $uid ?>" name="csrf" type="hidden" value="<?= htmlspecialchars(csrf_token()) ?>">
                             <input form="editUserForm-<?= $uid ?>" name="action" type="hidden" value="update">
                             <input form="editUserForm-<?= $uid ?>" name="id" type="hidden" value="<?= $uid ?>">
                             <input form="editUserForm-<?= $uid ?>" name="password" type="text" class="form-control form-control-sm d-inline-block" style="width:130px;" placeholder="New pw (opt.)">
                             <button form="editUserForm-<?= $uid ?>" type="submit" class="btn btn-sm btn-outline-dark">Save</button>
+                            <?php if (!$hasPassword): ?>
+                                <form method="post" class="d-inline">
+                                    <?php csrf_field(); ?>
+                                    <input type="hidden" name="action" value="resend_invite">
+                                    <input type="hidden" name="id" value="<?= $uid ?>">
+                                    <button type="submit" class="btn btn-sm btn-outline-primary">Resend invite</button>
+                                </form>
+                            <?php endif; ?>
                             <?php if ($uid !== htmlspecialchars($myId)): ?>
                                 <form method="post" class="d-inline" onsubmit="return confirm('Remove <?= htmlspecialchars($u['name']) ?>?')">
                                     <?php csrf_field(); ?>
