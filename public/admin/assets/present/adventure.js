@@ -120,6 +120,51 @@
         }, 85);
     }
 
+    /** `per_team` activities run once per team: index of the team that's up, else null. */
+    const teamTurn = (n, s) => (n.kind === 'activity' && n.per_team && (n.teams || []).length
+        ? Math.min(Number(s.ui.turn) || 0, n.teams.length - 1) : null);
+
+    /** Display order of `cards` (indices); ui.order once she has dragged them around. */
+    function cardOrder(n, s) {
+        const count = (n.cards || []).length, o = s.ui.order;
+        const valid = Array.isArray(o) && o.length === count && [...o].sort((a, b) => a - b).every((v, i) => v === i);
+        return valid ? o.slice() : [...Array(count).keys()];
+    }
+
+    /** Drag a card onto another to move it there (mouse; the order is saved like any other step). */
+    function makeSortable(grid, n, s) {
+        let from = null;
+        const clear = () => grid.querySelectorAll('.pcard').forEach((c) => c.classList.remove('dragging', 'drop-target'));
+        grid.addEventListener('dragstart', (e) => {
+            const c = e.target.closest('.pcard');
+            if (!c) return;
+            from = Number(c.dataset.pos);
+            c.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', String(from));
+        });
+        grid.addEventListener('dragover', (e) => {
+            const c = e.target.closest('.pcard');
+            if (!c || from === null) return;
+            e.preventDefault();
+            grid.querySelectorAll('.drop-target').forEach((x) => x !== c && x.classList.remove('drop-target'));
+            if (Number(c.dataset.pos) !== from) c.classList.add('drop-target');
+        });
+        grid.addEventListener('dragend', () => { from = null; clear(); });
+        grid.addEventListener('drop', (e) => {
+            const c = e.target.closest('.pcard');
+            if (!c || from === null) return;
+            e.preventDefault();
+            const to = Number(c.dataset.pos), src = from;
+            from = null;
+            clear();
+            if (to === src) return;
+            const order = cardOrder(n, s);
+            order.splice(to, 0, order.splice(src, 1)[0]);
+            Present.commit((t) => { t.ui.order = order; });
+        });
+    }
+
     // A reveal is either one `body` or a list of `steps` shown one press at a time.
     // ui.revealed = how many steps are showing (legacy `true` = all).
     const revealSteps = (n) => (!n.reveal ? [] : (Array.isArray(n.reveal.steps) && n.reveal.steps.length ? n.reveal.steps : [n.reveal.body || '']));
@@ -138,9 +183,14 @@
             case 'chance':
                 if (s.ui.roll == null) return roll(s);
                 return go(outcomeFor(n, s.ui.roll).next);
-            case 'activity':
+            case 'activity': {
                 if (revealPending(n, s)) return reveal(s);
+                const turn = teamTurn(n, s);
+                if (turn !== null && turn < n.teams.length - 1) {
+                    return Present.commit((t) => { t.ui.turn = turn + 1; });
+                }
                 return go(n.next);
+            }
         }
     }
 
@@ -221,8 +271,23 @@
     }
 
     function renderActivity(n, s) {
-        const teams = (n.teams || []).map((t) => `<div class="team-card"><div class="team-name">${esc(t.name)}</div><div class="md">${md(t.prompt)}</div></div>`).join('');
-        const cards = (n.cards || []).map((c) => `<div class="pcard"><div class="pcard-label">${esc(c.label)}</div><div class="md">${md(c.text)}</div></div>`).join('');
+        const turn = teamTurn(n, s);
+        const teams = (n.teams || []).map((t, i) => {
+            const cls = turn === null ? '' : (i === turn ? 'active' : (i < turn ? 'done' : 'waiting'));
+            return `<div class="team-card ${cls}"><div class="team-name">${esc(t.name)}</div><div class="md">${md(t.prompt)}</div></div>`;
+        }).join('');
+        const sortable = !!n.sortable && (n.cards || []).length > 1;
+        const cards = cardOrder(n, s).map((ci, pos) => {
+            const c = n.cards[ci];
+            return `<div class="pcard ${sortable ? 'sortable' : ''}" ${sortable ? `draggable="true" data-pos="${pos}"` : ''}>
+                ${sortable ? `<span class="pcard-rank">${pos + 1}</span>` : ''}
+                <div class="pcard-label">${esc(c.label)}</div><div class="md">${md(c.text)}</div></div>`;
+        }).join('');
+        // Per-team turns: the prompt names whose turn it is; Space moves to the next team.
+        const prompt = turn !== null
+            ? `**${n.teams[turn].name}** — you're up.${n.prompt ? '\n\n' + n.prompt : ''}`
+            : n.prompt;
+        const nextLabel = turn !== null && turn < n.teams.length - 1 ? 'Next: ' + n.teams[turn + 1].name.split(':')[0] + ' →' : null;
         const steps = revealSteps(n), shown = shownSteps(n, s), pending = revealPending(n, s);
         const multi = steps.length > 1;
         const rev = !n.reveal ? '' : (shown ? `<div class="reveal ${shown === 1 ? 'fresh' : ''}"><div class="reveal-title">${esc(n.reveal.title || 'Answer')}</div>
@@ -231,19 +296,19 @@
         return `<div class="cols">
                 <div class="col-main">
                     <div class="md">${md(n.body)}</div>
-                    ${n.prompt ? `<div class="prompt">${md(n.prompt)}</div>` : ''}
+                    ${prompt ? `<div class="prompt">${md(prompt)}</div>` : ''}
                 </div>
                 <div class="col-side">
                     <div data-timer-slot></div>
                     ${rev}
-                    ${pending ? '' : nextBtn()}
+                    ${pending ? '' : nextBtn(nextLabel)}
                 </div>
             </div>
             ${teams ? `<div class="teams">${teams}</div>` : ''}
             ${cards ? `<div class="print-area">
-                <div class="cards-head"><span>${esc(n.cards_title || '')}</span>
+                <div class="cards-head"><span>${esc(n.cards_title || '')}${sortable ? ' <small class="cards-hint no-print">drag to rank by priority</small>' : ''}</span>
                 ${n.printable ? '<button type="button" class="btn-ghost no-print" data-print>🖨 Print cards</button>' : ''}</div>
-                <div class="pcards">${cards}</div></div>` : ''}`;
+                <div class="pcards" ${sortable ? 'data-sortable' : ''}>${cards}</div></div>` : ''}`;
     }
 
     function renderEnding(n, s) {
@@ -266,7 +331,12 @@
             ${body ? body(n, s) : `<div class="md scene-body">${md(n.body)}</div>${nextBtn()}`}
         </section>`);
         const slot = slide.querySelector('[data-timer-slot]');
-        if (slot && n.timer) slot.replaceWith(Present.timer(s.node, Number(n.timer)));
+        if (slot && n.timer) {
+            const turn = teamTurn(n, s);
+            slot.replaceWith(Present.timer(s.node + (turn !== null ? ':' + turn : ''), Number(n.timer), { sound: n.timer_sound }));
+        }
+        const grid = slide.querySelector('.pcards[data-sortable]');
+        if (grid) makeSortable(grid, n, s);
         slide.addEventListener('click', (e) => {
             const t = e.target.closest('[data-pick],[data-go],[data-roll],[data-reveal],[data-print]');
             if (!t) return;
@@ -324,6 +394,9 @@
             key = `<h3>Reveal — ${shown}/${steps.length} shown${revealPending(n, s) ? ' (press R)' : ''}</h3><ol class="key">`
                 + steps.map((st, i) => `<li class="${i < shown ? 'picked' : ''}">${md(st)}</li>`).join('') + '</ol>';
         }
+        const turn = teamTurn(n, s);
+        if (turn !== null) key += `<h3>Team turns</h3><p><b>${esc(n.teams[turn].name)}</b> is up (${turn + 1} of ${n.teams.length}). Space moves to the next team with a fresh timer.</p>`;
+        if (n.sortable && (n.cards || []).length) key += '<h3>Current card order</h3><ol class="key">' + cardOrder(n, s).map((ci) => `<li>${esc(n.cards[ci].label)}</li>`).join('') + '</ol>';
         const next = n.next ? `<p class="muted">Next: ${target(n.next)}</p>` : '';
         return `<div class="notes-now"><span class="muted">${esc(n.kind)}${n.time ? ' · ' + esc(n.time) : ''}</span><h2>${esc(nodeTitle(n) || s.node)}</h2></div>
             ${n.notes ? `<div class="notes-text md">${md(n.notes)}</div>` : '<p class="muted">No notes for this slide.</p>'}
@@ -339,5 +412,7 @@
     Present.registerType('adventure', {
         initialState,
         isValidState, derive, render, onKey, notes, clock,
+        // Each team turn gets its own clock, so a turn change (incl. Undo) resets timers.
+        timerScope: (s) => { const t = teamTurn(cur(s), s); return s.node + (t !== null ? ':' + t : ''); },
     });
 })();

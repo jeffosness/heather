@@ -11,6 +11,7 @@
  *     initialState(),        // fresh run state
  *     isValidState(state),   // false → start fresh (lesson was edited)
  *     derive(state),         // optional: recompute derived fields after every change
+ *     timerScope(state),     // optional: timers reset when this changes (default: node)
  *     render(stageEl, state, {entering}),
  *     onKey(key, event, state) → true if handled,
  *     notes(state) → HTML for the presenter-notes window,
@@ -28,6 +29,7 @@
     let state = null;
     let history = [];
     let lastNodeRendered = null;
+    let lastTimerScope = null;
     let channel = null;
     const timers = new Map();
 
@@ -200,6 +202,21 @@
         o.start(t); o.stop(t + 0.05);
     }
 
+    /** Three gentle beeps — the end-of-timer sound when ticking is turned off. */
+    function beeps() {
+        const ctx = audio();
+        if (!ctx) return;
+        for (let i = 0; i < 3; i++) {
+            const o = ctx.createOscillator(), g = ctx.createGain(), t = ctx.currentTime + i * 0.3;
+            o.type = 'sine';
+            o.frequency.value = 880;
+            o.connect(g); g.connect(ctx.destination);
+            g.gain.setValueAtTime(0.25, t);
+            g.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+            o.start(t); o.stop(t + 0.25);
+        }
+    }
+
     /** Game-show buzzer: low, detuned, harsh. */
     function buzzer() {
         const ctx = audio();
@@ -241,10 +258,14 @@
      * A countdown widget, cached per key so it survives re-renders on the
      * same slide (e.g. revealing answers while the clock runs). Time is kept
      * against the real clock so it never drifts.
+     *
+     * opts.sound: 'full' (default: accelerating ticks + buzzer),
+     *             'end' (silent countdown, beeps when done), 'off'.
      */
-    function timer(key, seconds) {
+    function timer(key, seconds, opts = {}) {
         if (timers.has(key)) return timers.get(key).node;
         const totalMs = seconds * 1000;
+        const sound = ['full', 'end', 'off'].includes(opts.sound) ? opts.sound : 'full';
         let remainingMs = totalMs, endAt = 0, displayHandle = null, tickHandle = null;
         const node = el(`<div class="timer">
             <div class="timer-digits"></div>
@@ -286,11 +307,14 @@
                 endAt = Date.now() + remainingMs;
                 displayHandle = setInterval(() => {
                     remainingMs = Math.max(0, endAt - Date.now());
-                    if (remainingMs === 0) { stop(); buzzer(); }
+                    if (remainingMs === 0) {
+                        stop();
+                        if (sound === 'full') buzzer();
+                        else if (sound === 'end') beeps();
+                    }
                     paint();
                 }, 100);
-                tick(0);
-                scheduleTick();
+                if (sound === 'full') { tick(0); scheduleTick(); }
                 paint();
             },
             reset() { stop(); remainingMs = totalMs; paint(); },
@@ -336,8 +360,12 @@
     function render() {
         const stage = document.getElementById('stage');
         const entering = state.node !== lastNodeRendered;
-        if (entering && lastNodeRendered !== null) stopTimers();
         lastNodeRendered = state.node;
+        // Timers belong to a scope (the slide, or a team's turn on it). Any change —
+        // forward, Undo, Restart — stops the old clocks so none run off-screen.
+        const scope = player.timerScope ? player.timerScope(state) : state.node;
+        if (scope !== lastTimerScope && lastTimerScope !== null) stopTimers();
+        lastTimerScope = scope;
         stage.innerHTML = '';
         player.render(stage, state, { entering });
         if (entering) stage.scrollTop = 0;
