@@ -22,6 +22,9 @@ declare(strict_types=1);
  *   activity — timer (secs), teams: [{name, prompt}], cards: [{label, text}],
  *              cards_title, printable, reveal: {title, body | steps[]} → next
  *              (steps are revealed one key press at a time)
+ *              timer_sound: 'full' (default ticks + buzzer) | 'end' (silent, beeps) | 'off'
+ *              per_team: true — runs once per team ("Team 2, you're up"), fresh timer each
+ *              sortable: true — cards can be dragged into a ranked order
  *   ending   — final score + matching scoring band
  *
  * Text fields support **bold**, *italic*, "- " bullet lines and blank-line paragraphs.
@@ -176,6 +179,7 @@ Slide kinds:
 - "choice": A/B/C options. "options": [{ "key": "A", "text": "...", "points": 2, "skull": false, "feedback": "shown after picking", "next": "<slide-id>" }]. After a pick the class sees the feedback and point change, and the best option is marked. Only the FIRST pick scores; afterwards I can press the other letters to show "what would have happened" (not scored), which displays the option's optional "what_if" text (or its "feedback" if there's none). Write "what_if" for any wrong answer whose real consequence happens on a later slide (e.g. it leads to a die roll or a disaster), so exploring it still teaches the lesson.
 - "chance": an on-screen die roll. "sides": 6, "outcomes": [{ "min": 1, "max": 4, "title": "...", "text": "...", "points": 0, "tone": "danger", "next": "<slide-id>" }]. Outcomes must cover every number 1..sides exactly once.
 - "activity": a discussion/team task. Optional "timer" (seconds, countdown with beep), "teams": [{ "name": "Team 1: WATER", "prompt": "..." }], "cards": [{ "label": "Patient A", "text": "..." }] with "cards_title" and "printable": true (adds a Print button), and "reveal": { "title": "...", "body": "..." } (hidden answer I reveal with a key press) or { "title": "...", "steps": ["...", "..."] } (revealed one item per key press, great for confirming answers as the class calls them out). Needs "next".
+  Activity extras: "timer_sound": "full" (default: ticking that speeds up, then a buzzer) | "end" (silent countdown that beeps when done — good for presentations/briefings) | "off"; "per_team": true runs the slide once per team, announcing "Team 1: WATER — you're up" and giving each team a fresh timer (Space moves to the next team); "sortable": true lets me drag the cards into a ranked order while the class debates (e.g. triage priority).
 - "ending": shows the final score, the matching band, and a recap. No "next".
 
 Text formatting inside any text field: **bold**, *italic*, lines starting with "- " become bullets, a blank line (\\n\\n) starts a new paragraph. No HTML, no images.

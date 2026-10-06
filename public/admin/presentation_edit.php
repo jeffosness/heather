@@ -153,7 +153,7 @@ require_once __DIR__ . '/../../includes/admin_header.php';
                         <li><code>scene</code> — text + Continue → <code>next</code></li>
                         <li><code>choice</code> — <code>options</code>: <code>key</code>, <code>text</code>, <code>points</code>, <code>feedback</code>, <code>next</code>, optional <code>what_if</code> (shown when exploring other answers after the first pick, not scored)</li>
                         <li><code>chance</code> — die roll: <code>sides</code>, <code>outcomes</code>: <code>min</code>, <code>max</code>, <code>title</code>, <code>text</code>, <code>points</code>, <code>next</code></li>
-                        <li><code>activity</code> — <code>timer</code> (seconds), <code>teams</code>, <code>cards</code> + <code>printable</code>, <code>reveal</code>: <code>{title, body}</code> or <code>{title, steps: [...]}</code> (one per R press) → <code>next</code></li>
+                        <li><code>activity</code> — <code>timer</code> (seconds), <code>teams</code>, <code>cards</code> + <code>printable</code>, <code>reveal</code>: <code>{title, body}</code> or <code>{title, steps: [...]}</code> (one per R press), <code>timer_sound</code> (<code>full</code> / <code>end</code> / <code>off</code>), <code>per_team: true</code> (one turn per team), <code>sortable: true</code> (drag cards to rank) → <code>next</code></li>
                         <li><code>ending</code> — final score + matching <code>scoring.bands</code></li>
                     </ul>
                     <p class="mb-0">Text: <code>**bold**</code>, <code>*italic*</code>, lines starting <code>- </code> become bullets, blank line = new paragraph.</p>

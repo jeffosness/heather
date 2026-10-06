@@ -238,3 +238,22 @@ body.save-failed .save-warning { display: block; }
 .col-side.answered .option { padding: .3em .7em; font-size: .78em; }
 .col-side.answered .opt-key { width: 1.6em; height: 1.6em; }
 .col-side.answered .prompt { font-size: .9em; }
+
+/* per-team turns */
+.team-card { transition: opacity .3s, transform .3s, border-color .3s; }
+.team-card.active { border-top-color: var(--warn); box-shadow: 0 0 0 2px var(--warn); transform: translateY(-4px); }
+.team-card.active .team-name { color: var(--warn); }
+.team-card.done { opacity: .45; }
+.team-card.waiting { opacity: .7; }
+
+/* drag-to-rank cards */
+.pcard.sortable { position: relative; cursor: grab; padding-top: 1em; user-select: none; transition: transform .15s, box-shadow .15s; }
+.pcard.sortable:active { cursor: grabbing; }
+.pcard.dragging { opacity: .4; }
+.pcard.drop-target { box-shadow: 0 0 0 4px var(--warn); transform: scale(1.03); }
+.pcard-rank {
+    position: absolute; top: -.6em; left: -.6em; width: 2em; height: 2em; border-radius: 50%;
+    display: grid; place-items: center; background: var(--warn); color: #1a1a1a; font-weight: 800; font-size: .85em;
+}
+.cards-hint { font-weight: 400; color: var(--muted); font-size: .7em; margin-left: .5em; }
+@media print { .pcard-rank { display: none; } .pcard.sortable { padding-top: .8em; } }

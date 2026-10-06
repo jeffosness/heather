@@ -1,6 +1,6 @@
 {
     "id": "shift-from-hell",
-    "seed_version": 4,
+    "seed_version": 5,
     "title": "Your Shift From Hell",
     "type": "adventure",
     "course": "Intro — Unit 2 (obj 19–29)",
@@ -68,24 +68,37 @@
                 "body": "The procedure is underway.\n\nThe surgeon finishes suturing and says: **“Here.”**\n\nHe starts handing the loaded needle holder directly back to you.",
                 "prompt": "Choose:",
                 "options": [
-                    { "key": "A", "text": "Take it hand-to-hand because you're confident in your technique.", "points": 0, "what_if": "You'd **roll a die**.\n\n- **1–4:** nothing happens… this time.\n- **5–6:** **NEEDLESTICK** (−3) through your glove, then an exposure question about Standard Precautions.\n\nLuck isn't a sharps-safety plan.", "feedback": "Confidence isn't a safety device. Let's see how this goes…", "next": "r2_roll" },
+                    { "key": "A", "text": "Take hand to hand.", "points": 0, "what_if": "You'd **roll a die**.\n\n- **1–2:** nothing happens… this time.\n- **3–6:** **NEEDLESTICK** (−3) through your glove, then an exposure question about Standard Precautions.\n\nLuck isn't a sharps-safety plan.", "feedback": "Confidence isn't a safety device. Let's see how this goes…", "next": "r2_roll" },
                     { "key": "B", "text": "Grab the suture needle with your fingers and place it into the needle counter.", "points": -2, "feedback": "Never handle needles with your fingers. Use an **instrument** to handle suture needles.", "next": "r3" },
-                    { "key": "C", "text": "Direct the surgeon to place it in the neutral zone.", "points": 2, "feedback": "Correct. The **neutral zone** is a safe sharps-transfer technique — no hand-to-hand passing of sharps.", "next": "r3" }
+                    { "key": "C", "text": "Direct the surgeon to place it in the neutral zone.", "points": 2, "feedback": "Correct, however… the surgeon **refuses to use the neutral zone** and sets it directly on your Mayo.", "next": "r2_mayo" }
                 ],
-                "notes": "Source: Intro U2 obj 24-28.pptx — neutral zone; handle needles with instruments, not hands.\nCorrect answer: C (neutral zone). A → die roll.\n(B = −2 was added by Jeff; the original write-up didn't score the fingers option. Edit if you want it different.)"
+                "notes": "Source: Intro U2 obj 24-28.pptx — neutral zone; handle needles with instruments, not hands.\nCorrect answer: C (neutral zone, +2) — but the surgeon refuses and sets it on the Mayo, so C also leads to a die roll. A (hand to hand) → die roll. Both rolls: 1–2 safe, 3–6 needlestick.\n(B = −2 was added by Jeff; the original write-up didn't score the fingers option. Edit if you want it different.)"
             },
             "r2_roll": {
                 "kind": "chance",
                 "round": "ROUND 2",
                 "time": "08:17",
                 "title": "Roll the Die",
-                "body": "You took it hand-to-hand.\n\n- **1–4:** nothing happens.\n- **5–6:** …",
+                "body": "You took it hand to hand.\n\n- **1–2:** nothing happens.\n- **3–6:** …",
                 "sides": 6,
                 "outcomes": [
-                    { "min": 1, "max": 4, "title": "Nothing happens… this time.", "text": "You got lucky. Luck isn't a sharps-safety plan — next time, use the **neutral zone**.", "points": 0, "next": "r3" },
-                    { "min": 5, "max": 6, "title": "NEEDLESTICK!", "text": "The needle goes through your glove.", "points": -3, "tone": "danger", "next": "exposure" }
+                    { "min": 1, "max": 2, "title": "Nothing happens… this time.", "text": "You got lucky. Luck isn't a sharps-safety plan — next time, use the **neutral zone**.", "points": 0, "next": "r3" },
+                    { "min": 3, "max": 6, "title": "NEEDLESTICK!", "text": "The needle goes through your glove.", "points": -3, "tone": "danger", "next": "exposure" }
                 ],
                 "notes": "Press D (or click) to roll. Keys 1–6 force a specific result if you rolled a real die."
+            },
+            "r2_mayo": {
+                "kind": "chance",
+                "round": "ROUND 2",
+                "time": "08:17",
+                "title": "Roll the Die",
+                "body": "You failed to secure your sharps in a timely manner.\n\n- **1–2:** nothing happens.\n- **3–6:** …",
+                "sides": 6,
+                "outcomes": [
+                    { "min": 1, "max": 2, "title": "Nothing happens… this time.", "text": "You got lucky. A loose sharp on the Mayo is an injury waiting to happen — **secure it right away**.", "points": 0, "next": "r3" },
+                    { "min": 3, "max": 6, "title": "NEEDLESTICK!", "text": "The needle goes through your glove.", "points": -3, "tone": "danger", "next": "exposure" }
+                ],
+                "notes": "Reached from C: the surgeon refused the neutral zone and set the loaded needle holder on the Mayo.\nPress D (or click) to roll. Keys 1–6 force a specific result if you rolled a real die."
             },
             "exposure": {
                 "kind": "choice",
@@ -158,12 +171,21 @@
                 "next": "r4"
             },
             "r4": {
-                "kind": "activity",
+                "kind": "scene",
                 "round": "ROUND 4",
                 "eyebrow": "You survive the morning.",
                 "time": "13:05",
                 "title": "Laser Danger",
-                "body": "You enter another OR and immediately notice:\n\n- No warning sign on the door\n- Door propped open\n- Surgeon wearing jewelry\n- Staff wearing regular protective eyewear\n- Laser sitting in READY mode while nobody is using it",
+                "body": "You're asked to **give lunch to a tech**.\n\nYou enter their OR, where a **laser case** is set up.",
+                "notes": "Source: Intro U2 obj 21-23.pptx (laser safety). Next slide shows what they find in the room.",
+                "next": "r4_room"
+            },
+            "r4_room": {
+                "kind": "activity",
+                "round": "ROUND 4",
+                "time": "13:05",
+                "title": "Laser Danger",
+                "body": "You immediately notice:\n\n- No warning sign on the door\n- Door propped open\n- Surgeon wearing jewelry\n- Staff wearing regular protective eyewear\n- Laser sitting in READY mode while nobody is using it",
                 "prompt": "Teams — **60 seconds**: you may correct only **THREE** things before the procedure begins. What do you choose — and why?",
                 "timer": 60,
                 "reveal": {
@@ -191,7 +213,7 @@
                 "prompt": "Choose:",
                 "options": [
                     { "key": "A", "text": "Continue preparing your room until someone tells you otherwise.", "points": 0, "feedback": "The emergency announcement *is* someone telling you otherwise. Follow the facility plan and report for your assigned role.", "next": "r6" },
-                    { "key": "B", "text": "Leave immediately and drive home.", "points": -2, "feedback": "Walking out abandons your patients and your team. Follow the **facility emergency operations plan**.", "next": "r6" },
+                    { "key": "B", "text": "Leave immediately and check on family.", "points": -2, "feedback": "Walking out abandons your patients and your team. Follow the **facility emergency operations plan**.", "next": "r6" },
                     { "key": "C", "text": "Follow the facility emergency operations plan / incident command structure and await your assigned role.", "points": 3, "feedback": "Correct.\n\n**Your normal job description just became much less important.**\n\nDuring emergencies, CSTs may encounter patients requiring emergency surgery or may need to perform duties in other departments.", "next": "r6" }
                 ],
                 "notes": "Source: Intro U2 obj 29 All-Hazards Safety.pptx.\n(B = −2 was added by Jeff; the original write-up only scored C.)"
@@ -227,15 +249,17 @@
                 "eyebrow": "Incident Command",
                 "title": "Brief Incident Command",
                 "body": "Time's up. Each team gets **60 seconds** to brief Incident Command.",
-                "prompt": "Team 1, you're up.",
+                "prompt": "You have **60 seconds** to brief Incident Command.",
                 "timer": 60,
+                "timer_sound": "end",
+                "per_team": true,
                 "teams": [
                     { "name": "Team 1: WATER", "prompt": "Loss of water" },
                     { "name": "Team 2: WASTE", "prompt": "Biohazard waste" },
                     { "name": "Team 3: AIR", "prompt": "Contaminated outside air" },
                     { "name": "Team 4: SURGERY", "prompt": "Which services continue / elective cases" }
                 ],
-                "notes": "Run the 60s timer once per team: T starts it, and when it runs out T starts it again for the next team. Reset restarts it early.\nListen for: maintaining care, water supply, atmospheric contamination, waste management.",
+                "notes": "One team at a time: the active team's card is highlighted. Press T to start that team's 60 seconds (no ticking, it beeps when time is up). Space moves to the next team with a fresh timer; after Team 4, Space continues.\nListen for: maintaining care, water supply, atmospheric contamination, waste management.",
                 "next": "mci"
             },
             "mci": {
@@ -248,6 +272,7 @@
                 "prompt": "Who receives surgical resources first?",
                 "cards_title": "Patient cards",
                 "printable": true,
+                "sortable": true,
                 "cards": [
                     { "label": "Patient A", "text": "22-year-old, open femur fracture, stable." },
                     { "label": "Patient B", "text": "68-year-old, suspected ruptured abdominal aneurysm, profoundly hypotensive." },
@@ -259,7 +284,7 @@
                     "title": "Before you decide…",
                     "body": "**What information do you need before you can make this decision?**"
                 },
-                "notes": "Don't give the “correct” answer at first — ask what information they need.\nLeads into: triage, casualty response, personal/professional responsibilities, contamination control, moral/ethical issues (end of Intro U2 obj 29 All-Hazards Safety.pptx).\nPrint button prints the patient cards.",
+                "notes": "Don't give the “correct” answer at first — ask what information they need.\nLeads into: triage, casualty response, personal/professional responsibilities, contamination control, moral/ethical issues (end of Intro U2 obj 29 All-Hazards Safety.pptx).\nPrint button prints the patient cards.\nDrag the patient cards to rank them while the class debates; the rank numbers update as you move them.",
                 "next": "end"
             },
             "end": {
