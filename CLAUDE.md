@@ -97,7 +97,10 @@ and controls them from her laptop; the whole class participates together.
   the top of `presentation_type_adventure.php`).
 - **Seed lessons** in `includes/presentation_seeds/*.json` are imported once on
   first load (tracked in `presentations/_seeded.json`), so a lesson can ship via
-  a normal deploy. Re-seeding the same id won't overwrite her edits.
+  a normal deploy. To ship changes to a seeded lesson, bump its `seed_version`:
+  lessons she hasn't edited (content hash matches `seed_hash`) update
+  automatically; edited ones show an "update available" banner in the editor.
+  Either way the previous version lands in history.
 - `?lesson=<id>` = rehearsal (browser-only state); `?session=<id>` = real run
   (state saved to the server on every step). `&notes=1` = presenter notes window.
 

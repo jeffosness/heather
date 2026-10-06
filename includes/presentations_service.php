@@ -43,18 +43,81 @@ function lesson_path(string $id): string
     return APP_PRESENTATIONS_DIR . DIRECTORY_SEPARATOR . $id . '.json';
 }
 
-/** Import seed lessons once each — deleting a seeded lesson keeps it deleted. */
+/** Fields a seed update replaces — all of them count when deciding "has she edited this?". */
+const LESSON_SEED_FIELDS = ['title', 'type', 'course', 'description', 'content'];
+
+function lesson_seed_hash(array $lesson): string
+{
+    $fields = [];
+    foreach (LESSON_SEED_FIELDS as $k) $fields[$k] = $lesson[$k] ?? null;
+    return md5((string) json_encode($fields, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+}
+
+/** Shipped seed lessons keyed by id. */
+function seed_lessons(): array
+{
+    $out = [];
+    foreach (glob(PRESENTATION_SEEDS_DIR . DIRECTORY_SEPARATOR . '*.json') ?: [] as $file) {
+        $lesson = read_json_file($file, null);
+        if (is_array($lesson) && valid_lesson_id((string) ($lesson['id'] ?? ''))) $out[$lesson['id']] = $lesson;
+    }
+    return $out;
+}
+
+/** True if the lesson still matches what was seeded (Heather hasn't edited it). */
+function lesson_unedited_since_seed(array $lesson): bool
+{
+    if (!empty($lesson['seed_customized'])) return false;
+    if (isset($lesson['seed_hash'])) return $lesson['seed_hash'] === lesson_seed_hash($lesson);
+    // Lessons seeded before seed_hash existed: unedited if never re-saved.
+    return ($lesson['updated_at'] ?? '') === ($lesson['created_at'] ?? '');
+}
+
+/** A newer shipped version exists for this lesson. */
+function lesson_seed_update_available(array $lesson): bool
+{
+    $seed = seed_lessons()[$lesson['id'] ?? ''] ?? null;
+    return $seed !== null && (int) ($seed['seed_version'] ?? 1) > (int) ($lesson['seed_version'] ?? 1);
+}
+
+/** Replace a lesson's content with its shipped seed (previous version goes to history). */
+function apply_seed_update(string $id): bool
+{
+    $seed = seed_lessons()[$id] ?? null;
+    // Read the file directly: find_lesson() runs seeding, which calls back into here.
+    $lesson = read_json_file(lesson_path($id), null);
+    if ($seed === null || !is_array($lesson)) return false;
+    foreach (LESSON_SEED_FIELDS as $k) {
+        if (array_key_exists($k, $seed)) $lesson[$k] = $seed[$k];
+    }
+    $lesson['seed_version'] = (int) ($seed['seed_version'] ?? 1);
+    $lesson['seed_hash'] = lesson_seed_hash($lesson);
+    unset($lesson['seed_customized']);
+    return save_lesson($lesson);
+}
+
+/**
+ * Import seed lessons once each — deleting a seeded lesson keeps it deleted.
+ * When a seed's `seed_version` goes up, lessons she hasn't edited update
+ * automatically; edited ones get an "update available" banner in the editor.
+ */
 function seed_lessons_if_needed(): void
 {
     $markerPath = APP_PRESENTATIONS_DIR . DIRECTORY_SEPARATOR . '_seeded.json';
     $seeded = read_json_file($markerPath, []);
     if (!is_array($seeded)) $seeded = [];
     $changed = false;
-    foreach (glob(PRESENTATION_SEEDS_DIR . DIRECTORY_SEPARATOR . '*.json') ?: [] as $file) {
-        $lesson = read_json_file($file, null);
-        $id = (string) ($lesson['id'] ?? '');
-        if (!is_array($lesson) || !valid_lesson_id($id) || in_array($id, $seeded, true)) continue;
+    foreach (seed_lessons() as $id => $lesson) {
+        if (in_array($id, $seeded, true)) {
+            $current = read_json_file(lesson_path($id), null);
+            if (is_array($current) && lesson_seed_update_available($current) && lesson_unedited_since_seed($current)) {
+                apply_seed_update($id);
+            }
+            continue;
+        }
         if (!is_file(lesson_path($id))) {
+            $lesson['seed_version'] = (int) ($lesson['seed_version'] ?? 1);
+            $lesson['seed_hash'] = lesson_seed_hash($lesson);
             $lesson['created_at'] = $lesson['updated_at'] = date('Y-m-d H:i:s');
             write_json_file(lesson_path($id), $lesson);
         }
@@ -180,6 +243,9 @@ function restore_lesson_version(string $id, string $file): bool
     $old = read_json_file(presentations_history_dir($id) . DIRECTORY_SEPARATOR . $file, null);
     if (!is_array($old)) return false;
     $old['id'] = $id;
+    // An explicit restore counts as her edit, so automatic seed updates must not
+    // immediately replace it (the editor banner still offers the update).
+    $old['seed_customized'] = true;
     return save_lesson($old);
 }
 

@@ -2,7 +2,7 @@
  * "Adventure" player — branching, scored scenario.
  * Content schema is documented in includes/presentation_type_adventure.php.
  *
- * Run state: { node, ui: {pick?, roll?, revealed?}, scores, skulls, path[], result }
+ * Run state: { node, ui: {pick?, roll?, revealed? (count of reveal steps shown)}, scores, skulls, path[], result, clock }
  * path[] records every scoring event so the ending can recap the run.
  */
 (() => {
@@ -106,7 +106,12 @@
         }, 85);
     }
 
-    const reveal = () => Present.commit((t) => { t.ui.revealed = true; });
+    // A reveal is either one `body` or a list of `steps` shown one press at a time.
+    // ui.revealed = how many steps are showing (legacy `true` = all).
+    const revealSteps = (n) => (!n.reveal ? [] : (Array.isArray(n.reveal.steps) && n.reveal.steps.length ? n.reveal.steps : [n.reveal.body || '']));
+    const shownSteps = (n, s) => (s.ui.revealed === true ? revealSteps(n).length : Number(s.ui.revealed) || 0);
+    const revealPending = (n, s) => shownSteps(n, s) < revealSteps(n).length;
+    const reveal = (s) => Present.commit((t) => { t.ui.revealed = shownSteps(cur(s), s) + 1; });
 
     function advance(s) {
         const n = cur(s);
@@ -120,7 +125,7 @@
                 if (s.ui.roll == null) return roll(s);
                 return go(outcomeFor(n, s.ui.roll).next);
             case 'activity':
-                if (n.reveal && !s.ui.revealed) return reveal();
+                if (revealPending(n, s)) return reveal(s);
                 return go(n.next);
         }
     }
@@ -187,9 +192,11 @@
     function renderActivity(n, s) {
         const teams = (n.teams || []).map((t) => `<div class="team-card"><div class="team-name">${esc(t.name)}</div><div class="md">${md(t.prompt)}</div></div>`).join('');
         const cards = (n.cards || []).map((c) => `<div class="pcard"><div class="pcard-label">${esc(c.label)}</div><div class="md">${md(c.text)}</div></div>`).join('');
-        const rev = n.reveal ? (s.ui.revealed
-            ? `<div class="reveal"><div class="reveal-title">${esc(n.reveal.title || 'Answer')}</div><div class="md">${md(n.reveal.body)}</div></div>`
-            : `<button type="button" class="btn-reveal" data-reveal>Reveal <span class="kbd">R</span></button>`) : '';
+        const steps = revealSteps(n), shown = shownSteps(n, s), pending = revealPending(n, s);
+        const multi = steps.length > 1;
+        const rev = !n.reveal ? '' : (shown ? `<div class="reveal ${shown === 1 ? 'fresh' : ''}"><div class="reveal-title">${esc(n.reveal.title || 'Answer')}</div>
+                ${steps.slice(0, shown).map((st) => `<div class="md ${multi ? 'reveal-step' : ''}">${md(st)}</div>`).join('')}</div>` : '')
+            + (pending ? `<button type="button" class="btn-reveal" data-reveal>${shown ? 'Reveal next' : 'Reveal'}${multi ? ` (${shown + 1}/${steps.length})` : ''} <span class="kbd">R</span></button>` : '');
         return `<div class="cols">
                 <div class="col-main">
                     <div class="md">${md(n.body)}</div>
@@ -198,7 +205,7 @@
                 <div class="col-side">
                     <div data-timer-slot></div>
                     ${rev}
-                    ${n.reveal && !s.ui.revealed ? '' : nextBtn()}
+                    ${pending ? '' : nextBtn()}
                 </div>
             </div>
             ${teams ? `<div class="teams">${teams}</div>` : ''}
@@ -235,7 +242,7 @@
             if (t.dataset.pick != null) pick(s, Number(t.dataset.pick));
             else if (t.hasAttribute('data-go')) advance(s);
             else if (t.hasAttribute('data-roll')) roll(s);
-            else if (t.hasAttribute('data-reveal')) reveal();
+            else if (t.hasAttribute('data-reveal')) reveal(s);
             else if (t.hasAttribute('data-print')) Present.print();
         });
         stage.appendChild(slide);
@@ -245,7 +252,7 @@
             stage.classList.add('flash-danger');
         }
         // New feedback / reveal can land below the fold on a 720p projector.
-        const fresh = !entering && slide.querySelector('.feedback, .reveal');
+        const fresh = !entering && (slide.querySelector('.feedback') || slide.querySelector('.reveal-step:last-of-type, .reveal'));
         if (fresh) fresh.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
@@ -260,7 +267,7 @@
             const forced = Number(key);
             if (forced >= 1 && forced <= (n.sides || 6)) { roll(s, forced); return true; }
         }
-        if (n.kind === 'activity' && key === 'R' && n.reveal && !s.ui.revealed) { reveal(); return true; }
+        if (n.kind === 'activity' && key === 'R' && revealPending(n, s)) { reveal(s); return true; }
         if (key === ' ' || key === 'Enter' || key === 'ArrowRight' || key === 'PageDown') { advance(s); return true; }
         return false;
     }
@@ -279,7 +286,9 @@
                 `<li><b>${o.min}–${o.max}</b> ${esc(o.title)} ${deltaBadge(o.points || 0, o.skull)} <span class="muted">→ ${target(o.next)}</span></li>`).join('') + '</ul>'
                 + '<p class="muted">Keys 1–' + (n.sides || 6) + ' force a result.</p>';
         } else if (n.kind === 'activity' && n.reveal) {
-            key = `<h3>Reveal${s.ui.revealed ? ' (shown)' : ' (hidden — press R)'}</h3><div class="md">${md(n.reveal.body)}</div>`;
+            const steps = revealSteps(n), shown = shownSteps(n, s);
+            key = `<h3>Reveal — ${shown}/${steps.length} shown${revealPending(n, s) ? ' (press R)' : ''}</h3><ol class="key">`
+                + steps.map((st, i) => `<li class="${i < shown ? 'picked' : ''}">${md(st)}</li>`).join('') + '</ol>';
         }
         const next = n.next ? `<p class="muted">Next: ${target(n.next)}</p>` : '';
         return `<div class="notes-now"><span class="muted">${esc(n.kind)}${n.time ? ' · ' + esc(n.time) : ''}</span><h2>${esc(nodeTitle(n) || s.node)}</h2></div>
