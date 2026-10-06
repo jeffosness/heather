@@ -15,7 +15,9 @@ declare(strict_types=1);
  * enter: {points, skull} applied when the node is reached.
  *
  *   scene    — body + Continue                                → next
- *   choice   — options: [{key, text, points, skull?, feedback, next}]
+ *   choice   — options: [{key, text, points, skull?, feedback, what_if?, next}]
+ *              First pick scores; afterwards other options can be explored
+ *              (not scored), showing `what_if` (or `feedback` if absent).
  *   chance   — sides (default 6), outcomes: [{min, max, title, text, points, skull?, tone?, next}]
  *   activity — timer (secs), teams: [{name, prompt}], cards: [{label, text}],
  *              cards_title, printable, reveal: {title, body | steps[]} → next
@@ -171,7 +173,7 @@ Every slide may have: "kind" (required), "round" (e.g. "ROUND 2"), "eyebrow" (sm
 
 Slide kinds:
 - "scene": text, then Continue. Needs "next".
-- "choice": A/B/C options. "options": [{ "key": "A", "text": "...", "points": 2, "skull": false, "feedback": "shown after picking", "next": "<slide-id>" }]. After a pick the class sees the feedback and point change, and the best option is marked.
+- "choice": A/B/C options. "options": [{ "key": "A", "text": "...", "points": 2, "skull": false, "feedback": "shown after picking", "next": "<slide-id>" }]. After a pick the class sees the feedback and point change, and the best option is marked. Only the FIRST pick scores; afterwards I can press the other letters to show "what would have happened" (not scored), which displays the option's optional "what_if" text (or its "feedback" if there's none). Write "what_if" for any wrong answer whose real consequence happens on a later slide (e.g. it leads to a die roll or a disaster), so exploring it still teaches the lesson.
 - "chance": an on-screen die roll. "sides": 6, "outcomes": [{ "min": 1, "max": 4, "title": "...", "text": "...", "points": 0, "tone": "danger", "next": "<slide-id>" }]. Outcomes must cover every number 1..sides exactly once.
 - "activity": a discussion/team task. Optional "timer" (seconds, countdown with beep), "teams": [{ "name": "Team 1: WATER", "prompt": "..." }], "cards": [{ "label": "Patient A", "text": "..." }] with "cards_title" and "printable": true (adds a Print button), and "reveal": { "title": "...", "body": "..." } (hidden answer I reveal with a key press) or { "title": "...", "steps": ["...", "..."] } (revealed one item per key press, great for confirming answers as the class calls them out). Needs "next".
 - "ending": shows the final score, the matching band, and a recap. No "next".

@@ -151,7 +151,7 @@ require_once __DIR__ . '/../../includes/admin_header.php';
                     <p class="mb-2">Every slide can have <code>round</code>, <code>eyebrow</code>, <code>time</code>, <code>title</code>, <code>body</code>, <code>prompt</code>, <code>notes</code> (only you see these), <code>tone</code> (<code>danger</code> / <code>success</code> / <code>shake</code>), and <code>enter</code>: <code>{"points": -5, "skull": true}</code>.</p>
                     <ul class="ps-3 mb-2">
                         <li><code>scene</code> — text + Continue → <code>next</code></li>
-                        <li><code>choice</code> — <code>options</code>: <code>key</code>, <code>text</code>, <code>points</code>, <code>feedback</code>, <code>next</code></li>
+                        <li><code>choice</code> — <code>options</code>: <code>key</code>, <code>text</code>, <code>points</code>, <code>feedback</code>, <code>next</code>, optional <code>what_if</code> (shown when exploring other answers after the first pick, not scored)</li>
                         <li><code>chance</code> — die roll: <code>sides</code>, <code>outcomes</code>: <code>min</code>, <code>max</code>, <code>title</code>, <code>text</code>, <code>points</code>, <code>next</code></li>
                         <li><code>activity</code> — <code>timer</code> (seconds), <code>teams</code>, <code>cards</code> + <code>printable</code>, <code>reveal</code>: <code>{title, body}</code> or <code>{title, steps: [...]}</code> (one per R press) → <code>next</code></li>
                         <li><code>ending</code> — final score + matching <code>scoring.bands</code></li>

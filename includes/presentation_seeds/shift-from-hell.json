@@ -1,6 +1,6 @@
 {
     "id": "shift-from-hell",
-    "seed_version": 3,
+    "seed_version": 4,
     "title": "Your Shift From Hell",
     "type": "adventure",
     "course": "Intro — Unit 2 (obj 19–29)",
@@ -68,7 +68,7 @@
                 "body": "The procedure is underway.\n\nThe surgeon finishes suturing and says: **“Here.”**\n\nHe starts handing the loaded needle holder directly back to you.",
                 "prompt": "Choose:",
                 "options": [
-                    { "key": "A", "text": "Take it hand-to-hand because you're confident in your technique.", "points": 0, "feedback": "Confidence isn't a safety device. Let's see how this goes…", "next": "r2_roll" },
+                    { "key": "A", "text": "Take it hand-to-hand because you're confident in your technique.", "points": 0, "what_if": "You'd **roll a die**.\n\n- **1–4:** nothing happens… this time.\n- **5–6:** **NEEDLESTICK** (−3) through your glove, then an exposure question about Standard Precautions.\n\nLuck isn't a sharps-safety plan.", "feedback": "Confidence isn't a safety device. Let's see how this goes…", "next": "r2_roll" },
                     { "key": "B", "text": "Grab the suture needle with your fingers and place it into the needle counter.", "points": -2, "feedback": "Never handle needles with your fingers. Use an **instrument** to handle suture needles.", "next": "r3" },
                     { "key": "C", "text": "Direct the surgeon to place it in the neutral zone.", "points": 2, "feedback": "Correct. The **neutral zone** is a safe sharps-transfer technique — no hand-to-hand passing of sharps.", "next": "r3" }
                 ],
@@ -110,8 +110,8 @@
                 "prompt": "As the CST, what do you do?",
                 "options": [
                     { "key": "A", "text": "Ask whether the prep is completely dry before handing off the drapes.", "points": 3, "feedback": "Correct. The CST **can wait to hand the drapes or knife until the prep is dry**.", "next": "fire_prevented" },
-                    { "key": "B", "text": "Hand off the drapes immediately. The circulator is responsible for prep.", "points": 0, "feedback": "You hand off the drapes. The surgeon reaches for the ESU…", "next": "fire" },
-                    { "key": "C", "text": "Drape now but keep saline nearby just in case.", "points": 0, "feedback": "A plan to put out a fire isn't a plan to prevent one. The surgeon reaches for the ESU…", "next": "fire" }
+                    { "key": "B", "text": "Hand off the drapes immediately. The circulator is responsible for prep.", "points": 0, "what_if": "The prep is still wet. The surgeon activates the ESU.\n\n**WHOOSH.** The drapes ignite near the patient's head: **SURGICAL FIRE** (−5 ☠️).\n\nPrep isn't only the circulator's concern — the CST can hold the drapes until the prep is dry.", "feedback": "You hand off the drapes. The surgeon reaches for the ESU…", "next": "fire" },
+                    { "key": "C", "text": "Drape now but keep saline nearby just in case.", "points": 0, "what_if": "The prep is still wet. The surgeon activates the ESU.\n\n**WHOOSH.** The drapes ignite near the patient's head: **SURGICAL FIRE** (−5 ☠️).\n\nSaline nearby is a plan to put out a fire, not to prevent one.", "feedback": "A plan to put out a fire isn't a plan to prevent one. The surgeon reaches for the ESU…", "next": "fire" }
                 ],
                 "notes": "Source: Intro U2 obj 21-23.pptx — CST can wait to hand drapes/knife until the prep is dry.\nCorrect answer: A. B or C → SURGICAL FIRE (−5 ☠️). A → 'what you prevented'."
             },
