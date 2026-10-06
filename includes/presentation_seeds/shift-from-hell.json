@@ -1,6 +1,6 @@
 {
     "id": "shift-from-hell",
-    "seed_version": 2,
+    "seed_version": 3,
     "title": "Your Shift From Hell",
     "type": "adventure",
     "course": "Intro — Unit 2 (obj 19–29)",
@@ -197,11 +197,19 @@
                 "notes": "Source: Intro U2 obj 29 All-Hazards Safety.pptx.\n(B = −2 was added by Jeff; the original write-up only scored C.)"
             },
             "r6": {
-                "kind": "activity",
+                "kind": "scene",
                 "round": "ROUND 6",
                 "eyebrow": "Incident Command update",
                 "title": "Hospital Survival",
                 "body": "- The earthquake damaged the **municipal water system** — the hospital has intermittent water pressure.\n- The ED is **receiving casualties**.\n- Normal **biohazard waste pickup** is unavailable.\n- There are reports of a **chemical release** several blocks away.",
+                "notes": "Source: Intro U2 obj 29 All-Hazards Safety.pptx.\nRead the update and let it land. Next slide gives each team its assignment.",
+                "next": "r6_assign"
+            },
+            "r6_assign": {
+                "kind": "activity",
+                "round": "ROUND 6",
+                "eyebrow": "Incident Command",
+                "title": "Your Assignments",
                 "prompt": "Each team has its own assignment. You have **1 minute to prepare** your briefing for Incident Command.",
                 "timer": 60,
                 "teams": [
