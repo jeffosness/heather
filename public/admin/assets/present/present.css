@@ -223,3 +223,18 @@ body.save-failed .save-warning { display: block; }
 .reveal-step::before { content: '▸'; position: absolute; left: 0; color: var(--warn); }
 .reveal-step p { margin: 0; }
 .reveal .btn-reveal { margin-top: .6em; }
+
+/* "what would have happened" exploration of other answers (not scored) */
+.option.exploring { border-style: dashed; border-color: var(--plum); opacity: 1; }
+.option.dim:hover, .option.best:hover { opacity: .8; }
+.explore-hint { font-size: .62em; color: var(--muted); margin-top: -.2em; }
+.feedback.whatif { border: 2px dashed var(--plum); border-left-width: 6px; background: var(--panel-2); }
+.whatif-tag { font-size: .6em; text-transform: uppercase; letter-spacing: .1em; color: var(--plum); border: 1px solid var(--plum); border-radius: .4em; padding: .15em .5em; white-space: nowrap; }
+.whatif-would { color: var(--muted); font-size: .8em; margin: .2em 0 .3em; }
+.whatif-btns { display: flex; flex-wrap: wrap; align-items: center; gap: .6em; }
+.whatif-btns .btn-next { margin-top: 0; }
+/* once answered, compact the options so feedback fits on a 720p projector */
+.col-side.answered .options { gap: .35rem; }
+.col-side.answered .option { padding: .3em .7em; font-size: .78em; }
+.col-side.answered .opt-key { width: 1.6em; height: 1.6em; }
+.col-side.answered .prompt { font-size: .9em; }

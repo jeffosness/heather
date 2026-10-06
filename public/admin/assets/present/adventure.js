@@ -50,6 +50,7 @@
         if (!s || !s.ui || !s.scores || !nodes[s.node] || !Array.isArray(s.path)) return false;
         const n = nodes[s.node];
         if (s.ui.pick != null && !(n.kind === 'choice' && (n.options || [])[s.ui.pick])) return false;
+        if (s.ui.explore != null && !(n.kind === 'choice' && (n.options || [])[s.ui.explore])) return false;
         if (s.ui.roll != null && !(n.kind === 'chance' && outcomeFor(n, s.ui.roll))) return false;
         return true;
     }
@@ -63,9 +64,22 @@
 
     const go = (next) => Present.commit((s) => { s.node = next; s.ui = {}; applyEnter(s, next); });
 
+    /**
+     * First pick scores. After that, picking another option only EXPLORES it
+     * ("what would have happened?") — no points, no path entry; picking the
+     * real answer again returns to it.
+     */
     function pick(s, i) {
         const n = cur(s), o = (n.options || [])[i];
-        if (n.kind !== 'choice' || s.ui.pick != null || !o) return;
+        if (n.kind !== 'choice' || !o) return;
+        if (s.ui.pick != null) {
+            const showing = s.ui.explore ?? s.ui.pick;
+            if (i === showing) return;
+            return Present.commit((t) => {
+                t.ui.explore = i === t.ui.pick ? null : i;
+                if (i !== t.ui.pick) t.ui.seen = [...new Set([...(t.ui.seen || []), i])];
+            });
+        }
         Present.commit((t) => {
             t.ui.pick = i;
             Present.addPoints(t, o.points || 0, !!o.skull);
@@ -151,27 +165,44 @@
     const nextBtn = (label) => `<button type="button" class="btn-next" data-go>${esc(label || 'Continue')} <span class="kbd">Space</span></button>`;
 
     function renderChoice(n, s) {
-        const picked = s.ui.pick;
+        const picked = s.ui.pick, explore = s.ui.explore ?? null;
         const best = Math.max(...n.options.map((o) => o.points || 0));
         const opts = n.options.map((o, i) => {
-            const cls = picked == null ? '' : (i === picked ? 'picked' : 'dim') + ((o.points || 0) === best && best > 0 ? ' best' : '');
-            return `<button type="button" class="option ${cls}" data-pick="${i}" ${picked != null ? 'disabled' : ''}>
+            let cls = '';
+            if (picked != null) {
+                cls = i === picked ? 'picked' : (i === explore ? 'exploring' : 'dim');
+                if ((o.points || 0) === best && best > 0) cls += ' best';
+            }
+            return `<button type="button" class="option ${cls}" data-pick="${i}">
                 <span class="opt-key">${esc(optKey(o, i))}</span><span class="opt-text">${esc(o.text)}</span>
                 ${picked != null && (o.points || 0) === best && best > 0 && i !== picked ? '<span class="opt-best">✓ best</span>' : ''}
             </button>`;
         }).join('');
         let fb = '';
         if (picked != null) {
-            const o = n.options[picked], d = o.points || 0;
-            fb = `<div class="feedback ${d > 0 ? 'good' : d < 0 ? 'bad' : 'meh'}">
-                <div class="fb-head"><span>${esc(optKey(o, picked))}</span>${deltaBadge(d, o.skull)}</div>
-                <div class="md">${md(o.feedback)}</div>${nextBtn()}</div>`;
+            const real = n.options[picked], realKey = optKey(real, picked);
+            if (explore != null) {
+                const o = n.options[explore], d = o.points || 0;
+                fb = `<div class="feedback whatif">
+                    <div class="fb-head"><span>What if you'd chosen ${esc(optKey(o, explore))}?</span><span class="whatif-tag">Not scored</span></div>
+                    <div class="md">${md(o.what_if || o.feedback)}</div>
+                    ${o.what_if ? '' : `<div class="whatif-would">${d || o.skull ? `Would have been ${deltaBadge(d, o.skull)}` : 'Would have been worth 0 points'}</div>`}
+                    <div class="whatif-btns">${nextBtn('Continue with ' + realKey)}
+                        <button type="button" class="btn-ghost" data-pick="${picked}">← Back to our answer (${esc(realKey)})</button></div></div>`;
+            } else {
+                const d = real.points || 0;
+                fb = `<div class="feedback ${d > 0 ? 'good' : d < 0 ? 'bad' : 'meh'}">
+                    <div class="fb-head"><span>${esc(realKey)}</span>${deltaBadge(d, real.skull)}</div>
+                    <div class="md">${md(real.feedback)}</div>${nextBtn()}</div>`;
+            }
         }
+        const hint = picked != null && n.options.length > 1
+            ? '<div class="explore-hint">Other answers: press a letter to see what would have happened (not scored).</div>' : '';
         return `<div class="cols">
             <div class="col-main md">${md(n.body)}</div>
-            <div class="col-side">
+            <div class="col-side ${picked != null ? 'answered' : ''}">
                 ${n.prompt ? `<div class="prompt">${md(n.prompt)}</div>` : ''}
-                <div class="options">${opts}</div>${fb}
+                <div class="options">${opts}</div>${hint}${fb}
             </div></div>`;
     }
 
@@ -258,7 +289,7 @@
 
     function onKey(key, e, s) {
         const n = cur(s);
-        if (n.kind === 'choice' && s.ui.pick == null) {
+        if (n.kind === 'choice') { // first press scores; later presses explore
             const i = n.options.findIndex((o, idx) => optKey(o, idx).toUpperCase() === key);
             if (i >= 0) { pick(s, i); return true; }
         }
@@ -280,7 +311,10 @@
         let key = '';
         if (n.kind === 'choice') {
             key = '<h3>Answer key</h3><ul class="key">' + n.options.map((o, i) =>
-                `<li class="${i === s.ui.pick ? 'picked' : ''}"><b>${esc(optKey(o, i))}</b> ${esc(o.text)} ${deltaBadge(o.points || 0, o.skull)} <span class="muted">→ ${target(o.next)}</span></li>`).join('') + '</ul>';
+                `<li class="${i === s.ui.pick ? 'picked' : ''}"><b>${esc(optKey(o, i))}</b> ${esc(o.text)} ${deltaBadge(o.points || 0, o.skull)} <span class="muted">→ ${target(o.next)}</span>`
+                + (i === s.ui.pick ? ' <span class="muted">· class picked</span>' : (s.ui.seen || []).includes(i) ? ' <span class="muted">· explored ✓</span>' : '')
+                + '</li>').join('') + '</ul>'
+                + (s.ui.pick != null ? '<p class="muted">Press another letter to show what would have happened (not scored).</p>' : '');
         } else if (n.kind === 'chance') {
             key = '<h3>Outcomes</h3><ul class="key">' + (n.outcomes || []).map((o) =>
                 `<li><b>${o.min}–${o.max}</b> ${esc(o.title)} ${deltaBadge(o.points || 0, o.skull)} <span class="muted">→ ${target(o.next)}</span></li>`).join('') + '</ul>'
