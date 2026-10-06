@@ -1,6 +1,6 @@
 {
     "id": "shift-from-hell",
-    "seed_version": 5,
+    "seed_version": 6,
     "title": "Your Shift From Hell",
     "type": "adventure",
     "course": "Intro — Unit 2 (obj 19–29)",
@@ -186,7 +186,7 @@
                 "time": "13:05",
                 "title": "Laser Danger",
                 "body": "You immediately notice:\n\n- No warning sign on the door\n- Door propped open\n- Surgeon wearing jewelry\n- Staff wearing regular protective eyewear\n- Laser sitting in READY mode while nobody is using it",
-                "prompt": "Teams — **60 seconds**: you may correct only **THREE** things before the procedure begins. What do you choose — and why?",
+                "prompt": "In your teams, you have **60 seconds** to discuss.\n\nYou may correct only **THREE** things before the procedure begins. What do you choose — and why?",
                 "timer": 60,
                 "reveal": {
                     "title": "Trick question.",
