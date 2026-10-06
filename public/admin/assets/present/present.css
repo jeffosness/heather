@@ -147,7 +147,8 @@ body.save-failed .save-warning { display: block; }
 .timer.done { animation: flash 1s ease-in-out 3; }
 .timer.done .timer-digits { color: var(--bad); }
 @keyframes flash { 50% { background: var(--bad); } }
-.reveal { background: var(--panel); border: 2px solid var(--warn); border-radius: .6em; padding: .8em 1em; animation: slide-in .35s ease-out; }
+.reveal { background: var(--panel); border: 2px solid var(--warn); border-radius: .6em; padding: .8em 1em; }
+.reveal.fresh { animation: slide-in .35s ease-out; }
 .reveal-title { font-weight: 800; color: var(--warn); font-size: 1.2em; margin-bottom: .3em; }
 .teams { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin-top: 1.5rem; }
 .team-card { background: var(--panel); border-top: 5px solid var(--sage); border-radius: .5em; padding: .8em 1em; }
@@ -215,3 +216,10 @@ body.save-failed .save-warning { display: block; }
     .pcards { grid-template-columns: 1fr 1fr; }
     .pcard { border: 2px dashed #555; break-inside: avoid; min-height: 2.2in; }
 }
+
+/* step-by-step reveals */
+.reveal-step { position: relative; padding-left: 1.2em; margin: .3em 0; }
+.reveal-step:last-of-type { animation: slide-in .35s ease-out; }
+.reveal-step::before { content: '▸'; position: absolute; left: 0; color: var(--warn); }
+.reveal-step p { margin: 0; }
+.reveal .btn-reveal { margin-top: .6em; }

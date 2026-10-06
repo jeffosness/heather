@@ -24,6 +24,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: /admin/presentation_edit.php?id=' . urlencode($id) . '&msg=' . urlencode($ok ? 'Restored that version (the current one was backed up first).' : 'Could not restore.'));
         exit;
     }
+    if ($action === 'apply_seed') {
+        $ok = apply_seed_update($id);
+        header('Location: /admin/presentation_edit.php?id=' . urlencode($id) . '&msg=' . urlencode($ok ? 'Updated to the newest built-in version. Your previous version is under Previous versions.' : 'Could not update.'));
+        exit;
+    }
     if ($action === 'save') {
         $draftJson = (string) ($_POST['content'] ?? '');
         $content = json_decode($draftJson, true);
@@ -76,6 +81,17 @@ require_once __DIR__ . '/../../includes/admin_header.php';
 
     <?php if ($msg !== ''): ?>
         <div class="alert alert-info alert-dismissible fade show"><?= htmlspecialchars($msg) ?><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php endif; ?>
+    <?php if (lesson_seed_update_available($lesson)): ?>
+        <div class="alert alert-primary d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <span><strong>A newer built-in version of this lesson is available.</strong> You've edited this one, so it wasn't updated automatically.</span>
+            <form method="post" onsubmit="return confirm('Replace this lesson with the newest built-in version? Your current version is kept under Previous versions.');">
+                <?php csrf_field(); ?>
+                <input type="hidden" name="action" value="apply_seed">
+                <input type="hidden" name="id" value="<?= htmlspecialchars($id) ?>">
+                <button class="btn btn-sm btn-primary" type="submit">Update to the new version</button>
+            </form>
+        </div>
     <?php endif; ?>
     <?php if ($errors): ?>
         <div class="alert alert-danger"><strong>Not saved — fix these first:</strong><ul class="mb-0">
@@ -137,7 +153,7 @@ require_once __DIR__ . '/../../includes/admin_header.php';
                         <li><code>scene</code> — text + Continue → <code>next</code></li>
                         <li><code>choice</code> — <code>options</code>: <code>key</code>, <code>text</code>, <code>points</code>, <code>feedback</code>, <code>next</code></li>
                         <li><code>chance</code> — die roll: <code>sides</code>, <code>outcomes</code>: <code>min</code>, <code>max</code>, <code>title</code>, <code>text</code>, <code>points</code>, <code>next</code></li>
-                        <li><code>activity</code> — <code>timer</code> (seconds), <code>teams</code>, <code>cards</code> + <code>printable</code>, <code>reveal</code>: <code>{title, body}</code> → <code>next</code></li>
+                        <li><code>activity</code> — <code>timer</code> (seconds), <code>teams</code>, <code>cards</code> + <code>printable</code>, <code>reveal</code>: <code>{title, body}</code> or <code>{title, steps: [...]}</code> (one per R press) → <code>next</code></li>
                         <li><code>ending</code> — final score + matching <code>scoring.bands</code></li>
                     </ul>
                     <p class="mb-0">Text: <code>**bold**</code>, <code>*italic*</code>, lines starting <code>- </code> become bullets, blank line = new paragraph.</p>

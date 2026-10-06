@@ -170,31 +170,82 @@
         });
     }
 
-    // ------------------------------------------------------------ timers
+    // ------------------------------------------------------------ timers + sound
 
     let audioCtx = null;
-    function beep(times) {
+    let muted = false;
+    try { muted = localStorage.getItem('present:muted') === '1'; } catch (e) { /* default: sound on */ }
+
+    function audio() {
+        if (muted) return null;
         try {
             audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-            for (let i = 0; i < times; i++) {
-                const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-                o.frequency.value = 880;
-                o.connect(g); g.connect(audioCtx.destination);
-                const t = audioCtx.currentTime + i * 0.35;
-                g.gain.setValueAtTime(0.25, t);
-                g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
-                o.start(t); o.stop(t + 0.3);
-            }
-        } catch (e) { /* no audio — the visual flash still shows */ }
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            return audioCtx;
+        } catch (e) {
+            return null; // no audio — the visual countdown still works
+        }
+    }
+
+    /** One short clock tick; pitch rises as time runs out (urgency 0 → 1). */
+    function tick(urgency) {
+        const ctx = audio();
+        if (!ctx) return;
+        const o = ctx.createOscillator(), g = ctx.createGain(), t = ctx.currentTime;
+        o.type = 'square';
+        o.frequency.value = 700 + 900 * urgency;
+        o.connect(g); g.connect(ctx.destination);
+        g.gain.setValueAtTime(0.12, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+        o.start(t); o.stop(t + 0.05);
+    }
+
+    /** Game-show buzzer: low, detuned, harsh. */
+    function buzzer() {
+        const ctx = audio();
+        if (!ctx) return;
+        const t = ctx.currentTime, g = ctx.createGain(), lp = ctx.createBiquadFilter();
+        lp.type = 'lowpass'; lp.frequency.value = 1400;
+        g.connect(lp); lp.connect(ctx.destination);
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(0.35, t + 0.02);
+        g.gain.setValueAtTime(0.35, t + 1.1);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 1.3);
+        [[110, 'sawtooth'], [116, 'sawtooth'], [55, 'square']].forEach(([f, type]) => {
+            const o = ctx.createOscillator();
+            o.type = type; o.frequency.value = f;
+            o.connect(g); o.start(t); o.stop(t + 1.32);
+        });
+    }
+
+    function toggleMute() {
+        muted = !muted;
+        try { localStorage.setItem('present:muted', muted ? '1' : '0'); } catch (e) { /* session only */ }
+        const b = document.querySelector('[data-act="mute"]');
+        if (b) b.textContent = muted ? '🔇' : '🔊';
+    }
+
+    /**
+     * Ticks once a second, then accelerates (and rises in pitch) through the
+     * final stretch — the last half of the timer, at least 10s — down to a
+     * rapid-fire tick before the buzzer.
+     */
+    function tickDelay(remainingMs, totalMs) {
+        const windowMs = Math.min(totalMs, Math.max(10000, totalMs / 2));
+        if (remainingMs > windowMs) return { delay: 1000, urgency: 0 };
+        const f = remainingMs / windowMs; // 1 → 0 across the window
+        return { delay: 110 + 890 * Math.pow(f, 1.5), urgency: 1 - f };
     }
 
     /**
      * A countdown widget, cached per key so it survives re-renders on the
-     * same slide (e.g. revealing answers while the clock runs).
+     * same slide (e.g. revealing answers while the clock runs). Time is kept
+     * against the real clock so it never drifts.
      */
     function timer(key, seconds) {
         if (timers.has(key)) return timers.get(key).node;
-        let left = seconds, handle = null;
+        const totalMs = seconds * 1000;
+        let remainingMs = totalMs, endAt = 0, displayHandle = null, tickHandle = null;
         const node = el(`<div class="timer">
             <div class="timer-digits"></div>
             <div class="timer-btns">
@@ -203,29 +254,49 @@
             </div></div>`);
         const digits = node.querySelector('.timer-digits');
         const toggleBtn = node.querySelector('[data-t="toggle"]');
+        const running = () => displayHandle !== null;
         const paint = () => {
-            digits.textContent = Math.floor(left / 60) + ':' + String(left % 60).padStart(2, '0');
-            node.classList.toggle('low', left <= 5 && left > 0);
-            node.classList.toggle('done', left === 0);
-            toggleBtn.textContent = handle ? 'Pause' : (left === seconds ? 'Start' : (left === 0 ? 'Again' : 'Resume'));
+            const secs = Math.ceil(remainingMs / 1000);
+            digits.textContent = Math.floor(secs / 60) + ':' + String(secs % 60).padStart(2, '0');
+            node.classList.toggle('low', secs <= 5 && secs > 0);
+            node.classList.toggle('done', remainingMs === 0);
+            toggleBtn.textContent = running() ? 'Pause' : (remainingMs === totalMs ? 'Start' : (remainingMs === 0 ? 'Again' : 'Resume'));
         };
-        const stop = () => { clearInterval(handle); handle = null; paint(); };
+        const stop = () => {
+            clearInterval(displayHandle); clearTimeout(tickHandle);
+            displayHandle = tickHandle = null;
+            paint();
+        };
+        const scheduleTick = () => {
+            const { delay } = tickDelay(remainingMs, totalMs);
+            tickHandle = setTimeout(() => {
+                if (!running() || remainingMs <= 0) return;
+                tick(tickDelay(remainingMs, totalMs).urgency);
+                scheduleTick();
+            }, delay);
+        };
         const t = {
             node,
             toggle() {
-                if (handle) return stop();
-                if (left === 0) left = seconds;
-                handle = setInterval(() => {
-                    left = Math.max(0, left - 1);
-                    if (left === 0) { stop(); beep(3); }
+                if (running()) {
+                    remainingMs = Math.max(0, endAt - Date.now());
+                    return stop();
+                }
+                if (remainingMs === 0) remainingMs = totalMs;
+                endAt = Date.now() + remainingMs;
+                displayHandle = setInterval(() => {
+                    remainingMs = Math.max(0, endAt - Date.now());
+                    if (remainingMs === 0) { stop(); buzzer(); }
                     paint();
-                }, 1000);
+                }, 100);
+                tick(0);
+                scheduleTick();
                 paint();
             },
-            reset() { stop(); left = seconds; paint(); },
+            reset() { stop(); remainingMs = totalMs; paint(); },
         };
-        toggleBtn.addEventListener('click', (e) => { e.stopPropagation(); t.toggle(); });
-        node.querySelector('[data-t="reset"]').addEventListener('click', (e) => { e.stopPropagation(); t.reset(); });
+        toggleBtn.addEventListener('click', (e) => { e.stopPropagation(); t.toggle(); toggleBtn.blur(); });
+        node.querySelector('[data-t="reset"]').addEventListener('click', (e) => { e.stopPropagation(); t.reset(); e.currentTarget.blur(); });
         paint();
         timers.set(key, t);
         return node;
@@ -251,6 +322,7 @@
                 <span class="tb-score-num"></span><span class="tb-skulls"></span></div>` : ''}
             <nav class="tb-actions">
                 <button type="button" data-act="undo" title="Undo (Backspace)">↶ Undo</button>
+                <button type="button" data-act="mute" title="Timer sounds on/off (M)">${muted ? '🔇' : '🔊'}</button>
                 <button type="button" data-act="notes" title="Presenter notes window (N)">Notes</button>
                 <button type="button" data-act="full" title="Full screen (F)">⛶</button>
                 <button type="button" data-act="reset" title="Restart from the beginning">Restart</button>
@@ -293,7 +365,7 @@
         if (player.onKey && player.onKey(key, e, state)) { e.preventDefault(); return; }
         const actions = {
             Backspace: undo, ArrowLeft: undo,
-            F: toggleFullscreen, N: openNotes,
+            F: toggleFullscreen, N: openNotes, M: toggleMute,
             '+': () => adjust(1), '=': () => adjust(1),
             '-': () => adjust(-1), '_': () => adjust(-1),
             T: () => { const t = [...timers.values()][0]; if (t) t.toggle(); },
@@ -307,7 +379,7 @@
         app.querySelector('.tb-actions').addEventListener('click', (e) => {
             const b = e.target.closest('[data-act]');
             if (!b) return;
-            ({ undo, notes: openNotes, full: toggleFullscreen, reset })[b.dataset.act]();
+            ({ undo, notes: openNotes, full: toggleFullscreen, reset, mute: toggleMute })[b.dataset.act]();
             b.blur();
         });
         document.addEventListener('keydown', onKey);
@@ -329,7 +401,7 @@
                     ${scoring.enabled ? `<div class="notes-score">${esc(scoring.label || 'Score')}: <strong>${score(s)}</strong>${skulls(s) ? ' ' + '☠️'.repeat(Math.min(skulls(s), 5)) : ''}</div>` : ''}
                 </header>
                 <div class="notes-body">${player.notes(s)}</div>
-                <footer class="notes-keys">Keys on the main screen: <b>A/B/C</b> choose · <b>Space</b> continue · <b>D</b> roll · <b>R</b> reveal · <b>T</b> timer · <b>Backspace</b> undo · <b>+/−</b> score · <b>F</b> full screen</footer>`;
+                <footer class="notes-keys">Keys on the main screen: <b>A/B/C</b> choose · <b>Space</b> continue · <b>D</b> roll · <b>R</b> reveal · <b>T</b> timer · <b>M</b> mute · <b>Backspace</b> undo · <b>+/−</b> score · <b>F</b> full screen</footer>`;
         };
         const local = loadLocal();
         paint(local ? local.state : P.saved);

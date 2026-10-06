@@ -1,5 +1,6 @@
 {
     "id": "shift-from-hell",
+    "seed_version": 2,
     "title": "Your Shift From Hell",
     "type": "adventure",
     "course": "Intro — Unit 2 (obj 19–29)",
@@ -33,7 +34,16 @@
                 "time": "07:02",
                 "title": "Your Objective",
                 "body": "Keep your **patients**, **yourself**, and your **surgical team** safe until the end of the shift.\n\nYou begin with **10 Patient Safety Points**.\n\n- Make a dangerous decision: **lose points**\n- Recognize / prevent a hazard: **gain points**\n- Cause a sentinel-event-level disaster: ☠️",
-                "notes": "Then the adventure begins. Keys: A/B/C to choose, Space to continue, D to roll, R to reveal, Backspace to undo, +/− to adjust the score.",
+                "notes": "Then the adventure begins. Keys: A/B/C to choose, Space to continue, D to roll, R to reveal, T to start/pause a timer, M to mute timer sounds, Backspace to undo, +/− to adjust the score.",
+                "next": "teams"
+            },
+            "teams": {
+                "kind": "scene",
+                "eyebrow": "Your Shift From Hell",
+                "time": "07:02",
+                "title": "Form Your Teams",
+                "body": "Split into **4 teams**: **Team 1**, **Team 2**, **Team 3**, and **Team 4**.\n\nSit together. You're a team for the whole shift.\n\nWhen a round says **Teams**, talk it out together before you answer.",
+                "notes": "Split the class into 4 roughly equal groups now. Rounds 3 and 4 are team discussions, and Round 6 gives each team its own assignment (Water, Waste, Air, Surgery).",
                 "next": "r1"
             },
             "r1": {
@@ -59,10 +69,10 @@
                 "prompt": "Choose:",
                 "options": [
                     { "key": "A", "text": "Take it hand-to-hand because you're confident in your technique.", "points": 0, "feedback": "Confidence isn't a safety device. Let's see how this goes…", "next": "r2_roll" },
-                    { "key": "B", "text": "Direct the surgeon to place it in the neutral zone.", "points": 2, "feedback": "Correct. The **neutral zone** is a safe sharps-transfer technique — no hand-to-hand passing of sharps.", "next": "r3" },
-                    { "key": "C", "text": "Grab the suture needle with your fingers and place it into the needle counter.", "points": -2, "feedback": "Never handle needles with your fingers. Use an **instrument** to handle suture needles.", "next": "r3" }
+                    { "key": "B", "text": "Grab the suture needle with your fingers and place it into the needle counter.", "points": -2, "feedback": "Never handle needles with your fingers. Use an **instrument** to handle suture needles.", "next": "r3" },
+                    { "key": "C", "text": "Direct the surgeon to place it in the neutral zone.", "points": 2, "feedback": "Correct. The **neutral zone** is a safe sharps-transfer technique — no hand-to-hand passing of sharps.", "next": "r3" }
                 ],
-                "notes": "Source: Intro U2 obj 24-28.pptx — neutral zone; handle needles with instruments, not hands.\n(C = −2 was added by Jeff; the original write-up didn't score C. Edit if you want it different.)"
+                "notes": "Source: Intro U2 obj 24-28.pptx — neutral zone; handle needles with instruments, not hands.\nCorrect answer: C (neutral zone). A → die roll.\n(B = −2 was added by Jeff; the original write-up didn't score the fingers option. Edit if you want it different.)"
             },
             "r2_roll": {
                 "kind": "chance",
@@ -99,11 +109,11 @@
                 "body": "The patient is receiving **oxygen via nasal cannula**.\n\nThe circulator has just finished an **alcohol-based prep**.\n\nThe surgeon says: **“Let's drape. I'm already running behind.”**",
                 "prompt": "As the CST, what do you do?",
                 "options": [
-                    { "key": "A", "text": "Hand off the drapes immediately. The circulator is responsible for prep.", "points": 0, "feedback": "You hand off the drapes. The surgeon reaches for the ESU…", "next": "fire" },
-                    { "key": "B", "text": "Ask whether the prep is completely dry before handing off the drapes.", "points": 3, "feedback": "Correct. The CST **can wait to hand the drapes or knife until the prep is dry**.", "next": "fire_prevented" },
+                    { "key": "A", "text": "Ask whether the prep is completely dry before handing off the drapes.", "points": 3, "feedback": "Correct. The CST **can wait to hand the drapes or knife until the prep is dry**.", "next": "fire_prevented" },
+                    { "key": "B", "text": "Hand off the drapes immediately. The circulator is responsible for prep.", "points": 0, "feedback": "You hand off the drapes. The surgeon reaches for the ESU…", "next": "fire" },
                     { "key": "C", "text": "Drape now but keep saline nearby just in case.", "points": 0, "feedback": "A plan to put out a fire isn't a plan to prevent one. The surgeon reaches for the ESU…", "next": "fire" }
                 ],
-                "notes": "Source: Intro U2 obj 21-23.pptx — CST can wait to hand drapes/knife until the prep is dry.\nA or C → SURGICAL FIRE (−5 ☠️). B → 'what you prevented'."
+                "notes": "Source: Intro U2 obj 21-23.pptx — CST can wait to hand drapes/knife until the prep is dry.\nCorrect answer: A. B or C → SURGICAL FIRE (−5 ☠️). A → 'what you prevented'."
             },
             "fire": {
                 "kind": "activity",
@@ -116,9 +126,14 @@
                 "timer": 20,
                 "reveal": {
                     "title": "The Fire Triangle",
-                    "body": "- **Ignition:** ESU\n- **Oxidizer:** oxygen\n- **Fuel:** drapes / alcohol-based prep\n\n**Bonus:** Which element did the CST have the most control over?"
+                    "steps": [
+                        "**Ignition:** ESU",
+                        "**Oxidizer:** oxygen",
+                        "**Fuel:** drapes / alcohol-based prep",
+                        "**Bonus:** Which element did the CST have the most control over?"
+                    ]
                 },
-                "notes": "Source: Intro U2 obj 21-23.pptx (fire triangle).\nBonus question is meant to produce a class discussion.",
+                "notes": "Source: Intro U2 obj 21-23.pptx (fire triangle).\nPress R once per element as the class calls them out. The 4th press shows the bonus question, which is meant to start a class discussion.",
                 "next": "r4"
             },
             "fire_prevented": {
@@ -132,9 +147,14 @@
                 "timer": 20,
                 "reveal": {
                     "title": "The Fire Triangle",
-                    "body": "- **Ignition:** ESU\n- **Oxidizer:** oxygen\n- **Fuel:** drapes / alcohol-based prep\n\n**Bonus:** Which element did the CST have the most control over?"
+                    "steps": [
+                        "**Ignition:** ESU",
+                        "**Oxidizer:** oxygen",
+                        "**Fuel:** drapes / alcohol-based prep",
+                        "**Bonus:** Which element did the CST have the most control over?"
+                    ]
                 },
-                "notes": "Source: Intro U2 obj 21-23.pptx. Same fire-triangle discussion, framed as the disaster they prevented.",
+                "notes": "Source: Intro U2 obj 21-23.pptx. Same fire-triangle discussion, framed as the disaster they prevented.\nPress R once per element as the class calls them out.",
                 "next": "r4"
             },
             "r4": {
@@ -144,12 +164,21 @@
                 "time": "13:05",
                 "title": "Laser Danger",
                 "body": "You enter another OR and immediately notice:\n\n- No warning sign on the door\n- Door propped open\n- Surgeon wearing jewelry\n- Staff wearing regular protective eyewear\n- Laser sitting in READY mode while nobody is using it",
-                "prompt": "You may correct only **THREE** things before the procedure begins. What do you choose — and why?",
+                "prompt": "Teams — **60 seconds**: you may correct only **THREE** things before the procedure begins. What do you choose — and why?",
+                "timer": 60,
                 "reveal": {
                     "title": "Trick question.",
-                    "body": "You don't pick three. **The procedure shouldn't proceed until the safety issues are corrected.**\n\n- Appropriate **laser eyewear**\n- Remove **reflective jewelry**\n- **Warning signs** / a controlled environment\n- **Respiratory protection / smoke evacuation**\n- Laser on **standby** when it isn't actively being used\n\nProduction pressure doesn't override safety."
+                    "steps": [
+                        "You don't pick three. **The procedure shouldn't proceed until the safety issues are corrected.**",
+                        "Appropriate **laser eyewear**",
+                        "Remove **reflective jewelry**",
+                        "**Warning signs** / a controlled environment",
+                        "**Respiratory protection / smoke evacuation**",
+                        "Laser on **standby** when it isn't actively being used",
+                        "Production pressure doesn't override safety."
+                    ]
                 },
-                "notes": "Source: Intro U2 obj 21-23.pptx (laser safety). Let each team answer before you reveal.",
+                "notes": "Source: Intro U2 obj 21-23.pptx (laser safety). Start the 60s timer, then let each team give its three before you reveal.\nThe timer is deliberate production pressure. The reveal is that it doesn't count. Press R repeatedly to walk through each correction.",
                 "next": "r5"
             },
             "r5": {
@@ -173,7 +202,7 @@
                 "eyebrow": "Incident Command update",
                 "title": "Hospital Survival",
                 "body": "- The earthquake damaged the **municipal water system** — the hospital has intermittent water pressure.\n- The ED is **receiving casualties**.\n- Normal **biohazard waste pickup** is unavailable.\n- There are reports of a **chemical release** several blocks away.",
-                "prompt": "Each team gets **60 seconds** to brief Incident Command.",
+                "prompt": "Each team has its own assignment. You have **1 minute to prepare** your briefing for Incident Command.",
                 "timer": 60,
                 "teams": [
                     { "name": "Team 1: WATER", "prompt": "How could loss of water affect surgical services and patient care?" },
@@ -181,7 +210,24 @@
                     { "name": "Team 3: AIR", "prompt": "How might the hospital protect patients/staff from contaminated outside air?" },
                     { "name": "Team 4: SURGERY", "prompt": "Which surgical services should continue, and what should happen to elective cases?" }
                 ],
-                "notes": "Source: Intro U2 obj 29 All-Hazards Safety.pptx — maintaining care, water supply, atmospheric contamination, waste management.\nRestart the 60s timer for each team's briefing (T key or the Reset button).",
+                "notes": "Source: Intro U2 obj 29 All-Hazards Safety.pptx — maintaining care, water supply, atmospheric contamination, waste management.\n“You're all in your 4 groups. You now have 1 minute to prepare your response.” Then start the timer (T).",
+                "next": "r6_brief"
+            },
+            "r6_brief": {
+                "kind": "activity",
+                "round": "ROUND 6",
+                "eyebrow": "Incident Command",
+                "title": "Brief Incident Command",
+                "body": "Time's up. Each team gets **60 seconds** to brief Incident Command.",
+                "prompt": "Team 1, you're up.",
+                "timer": 60,
+                "teams": [
+                    { "name": "Team 1: WATER", "prompt": "Loss of water" },
+                    { "name": "Team 2: WASTE", "prompt": "Biohazard waste" },
+                    { "name": "Team 3: AIR", "prompt": "Contaminated outside air" },
+                    { "name": "Team 4: SURGERY", "prompt": "Which services continue / elective cases" }
+                ],
+                "notes": "Run the 60s timer once per team: T starts it, and when it runs out T starts it again for the next team. Reset restarts it early.\nListen for: maintaining care, water supply, atmospheric contamination, waste management.",
                 "next": "mci"
             },
             "mci": {

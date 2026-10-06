@@ -18,7 +18,8 @@ declare(strict_types=1);
  *   choice   — options: [{key, text, points, skull?, feedback, next}]
  *   chance   — sides (default 6), outcomes: [{min, max, title, text, points, skull?, tone?, next}]
  *   activity — timer (secs), teams: [{name, prompt}], cards: [{label, text}],
- *              cards_title, printable, reveal: {title, body}   → next
+ *              cards_title, printable, reveal: {title, body | steps[]} → next
+ *              (steps are revealed one key press at a time)
  *   ending   — final score + matching scoring band
  *
  * Text fields support **bold**, *italic*, "- " bullet lines and blank-line paragraphs.
@@ -172,7 +173,7 @@ Slide kinds:
 - "scene": text, then Continue. Needs "next".
 - "choice": A/B/C options. "options": [{ "key": "A", "text": "...", "points": 2, "skull": false, "feedback": "shown after picking", "next": "<slide-id>" }]. After a pick the class sees the feedback and point change, and the best option is marked.
 - "chance": an on-screen die roll. "sides": 6, "outcomes": [{ "min": 1, "max": 4, "title": "...", "text": "...", "points": 0, "tone": "danger", "next": "<slide-id>" }]. Outcomes must cover every number 1..sides exactly once.
-- "activity": a discussion/team task. Optional "timer" (seconds, countdown with beep), "teams": [{ "name": "Team 1: WATER", "prompt": "..." }], "cards": [{ "label": "Patient A", "text": "..." }] with "cards_title" and "printable": true (adds a Print button), and "reveal": { "title": "...", "body": "..." } (hidden answer I reveal with a key press). Needs "next".
+- "activity": a discussion/team task. Optional "timer" (seconds, countdown with beep), "teams": [{ "name": "Team 1: WATER", "prompt": "..." }], "cards": [{ "label": "Patient A", "text": "..." }] with "cards_title" and "printable": true (adds a Print button), and "reveal": { "title": "...", "body": "..." } (hidden answer I reveal with a key press) or { "title": "...", "steps": ["...", "..."] } (revealed one item per key press, great for confirming answers as the class calls them out). Needs "next".
 - "ending": shows the final score, the matching band, and a recap. No "next".
 
 Text formatting inside any text field: **bold**, *italic*, lines starting with "- " become bullets, a blank line (\\n\\n) starts a new paragraph. No HTML, no images.
