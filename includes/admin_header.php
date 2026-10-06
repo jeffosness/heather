@@ -74,6 +74,7 @@ function admin_subnav_html(string $group, string $active): string
             $topNav = [
                 ['dashboard', 'Dashboard',       '/admin/'],
                 ['students',  'Students',        '/admin/students.php'],
+                ['presentations', 'Presentations', '/admin/presentations.php'],
                 ['feedback',  'Change requests', '/admin/feedback.php'],
                 ['settings',  'Settings',        '/admin/settings.php'],
             ];

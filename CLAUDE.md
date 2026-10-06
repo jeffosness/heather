@@ -40,6 +40,10 @@ heather/
 │   ├── auth.php                    ← login state + require_login
 │   ├── users_service.php           ← admin accounts
 │   ├── feedback_service.php        ← change-request queue + GitHub Issues
+│   ├── presentations_service.php   ← lessons + sessions (see Presentations)
+│   ├── presentation_types.php      ← type registry; presentation_type_*.php per type
+│   ├── presentation_ai_prompt.php  ← ChatGPT starter prompt
+│   ├── presentation_seeds/         ← lessons shipped in git, imported once
 │   ├── public_header.php + public_footer.php
 │   └── admin_header.php + admin_footer.php
 ├── public/                         ← this IS the webroot
@@ -71,6 +75,41 @@ heather/
   spinner that keeps the *submitter* button enabled (Safari/iOS Chrome
   drop the submitter's name/value if disabled mid-submit — never do
   `btn.disabled = true` on a form's submitter)
+
+## Presentations (classroom lessons/games)
+
+`/admin/presentations.php`. Heather projects interactive lessons in class
+and controls them from her laptop; the whole class participates together.
+
+- **Lesson** = reusable content, kept and improved year to year. One file per
+  lesson at `protected/heather/presentations/<id>.json`. Every save snapshots
+  the old version to `presentations/_history/<id>/` (restore from the editor);
+  delete is a soft move into that folder.
+- **Session** = one dated run of a lesson for a class
+  (`presentation_sessions.json`). Holds run state + final result only.
+  `mode` is `class` today; `state.scores` / `state.skulls` are keyed by team
+  id (`class`) so a future team mode (per-team join pages) needs no migration.
+- **Types** are pluggable: `includes/presentation_types.php` registry →
+  `includes/presentation_type_<key>.php` (validate / starter / outline /
+  ai_guide) + `public/admin/assets/present/<key>.js` player. The shared shell
+  is `present.php` + `core.js` (score bar, keys, undo, save, notes window,
+  timers). First type: `adventure` (branching, scored; schema documented at
+  the top of `presentation_type_adventure.php`).
+- **Seed lessons** in `includes/presentation_seeds/*.json` are imported once on
+  first load (tracked in `presentations/_seeded.json`), so a lesson can ship via
+  a normal deploy. Re-seeding the same id won't overwrite her edits.
+- `?lesson=<id>` = rehearsal (browser-only state); `?session=<id>` = real run
+  (state saved to the server on every step). `&notes=1` = presenter notes window.
+
+### New-lesson requests via ChatGPT
+The Presentations page has a 4-step panel: copy a starter prompt (built by
+`includes/presentation_ai_prompt.php` from the type registry, including each
+type's `ai_guide`), design the lesson in ChatGPT, send the finalize phrase,
+then paste ChatGPT's single code block into a change request (→ GitHub issue).
+The issue body ends with `LESSON JSON` in our schema: for an existing type, save
+it as a seed file (or import it via the admin Import button) and validate it; any
+`NEW FEATURES NEEDED` items are the engine work. Keep `ai_guide` in sync when a
+type's schema changes.
 
 ## Auth model
 

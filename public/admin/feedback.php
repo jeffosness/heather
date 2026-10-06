@@ -112,6 +112,9 @@ if ($viewId !== '') {
 
 // ----- List view -----
 $feedback = load_feedback();
+// Other pages can deep-link here with a pre-filled title/page (e.g. "Request a new lesson").
+$prefillTitle = (string) ($_GET['title'] ?? '');
+$prefillPage  = (string) ($_GET['page'] ?? '');
 $ghByNumber = github_fetch_feedback_issues();
 
 $pageTitle = 'Change Requests';
@@ -139,15 +142,15 @@ require_once __DIR__ . '/../../includes/admin_header.php';
                 <input type="hidden" name="action" value="add">
                 <div class="mb-3">
                     <label class="form-label">Short title <span class="text-danger">*</span></label>
-                    <input class="form-control" type="text" name="title" placeholder="e.g. Add a student resources page" required>
+                    <input class="form-control" type="text" name="title" value="<?= htmlspecialchars($prefillTitle) ?>" placeholder="e.g. Add a student resources page" required>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Which part of the site? <small class="text-muted">(optional)</small></label>
-                    <input class="form-control" type="text" name="page" placeholder="e.g. home, admin, or free text">
+                    <input class="form-control" type="text" name="page" value="<?= htmlspecialchars($prefillPage) ?>" placeholder="e.g. home, admin, or free text">
                 </div>
                 <div class="mb-3">
                     <label class="form-label">What would you like changed? <span class="text-danger">*</span></label>
-                    <textarea class="form-control" name="body" rows="5" placeholder="Describe what you'd like. The more context, the faster it gets done." required></textarea>
+                    <textarea class="form-control" name="body" rows="<?= $prefillTitle !== '' ? 14 : 5 ?>" placeholder="<?= $prefillTitle !== '' ? 'Paste ChatGPT\'s final answer here.' : 'Describe what you\'d like. The more context, the faster it gets done.' ?>" required <?= $prefillTitle !== '' ? 'autofocus' : '' ?>></textarea>
                 </div>
                 <button type="submit" class="btn btn-dark">Send</button>
             </form>
