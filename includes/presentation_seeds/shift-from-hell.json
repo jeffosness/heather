@@ -1,0 +1,220 @@
+{
+    "id": "shift-from-hell",
+    "title": "Your Shift From Hell",
+    "type": "adventure",
+    "course": "Intro — Unit 2 (obj 19–29)",
+    "description": "Branching safety scenario: electrical hazards, sharps, surgical fire, laser safety, an all-hazards emergency, and mass-casualty triage. Class-wide score she controls up front.",
+    "content": {
+        "start": "intro",
+        "scoring": {
+            "enabled": true,
+            "start": 10,
+            "label": "Patient Safety Points",
+            "bands": [
+                { "min": 15, "title": "SAFETY CHAMPIONS", "text": "Your team prevented multiple adverse events and survived the shift.", "tone": "success" },
+                { "min": 10, "title": "YOU SURVIVED", "text": "A few incident reports are coming, but everyone made it." },
+                { "min": 5, "title": "RISK MANAGEMENT WOULD LIKE A WORD", "text": "Please report to administration.", "tone": "warning" },
+                { "title": "ROOT CAUSE ANALYSIS", "text": "Congratulations. You are now the subject of next year's mandatory safety module.", "tone": "danger" }
+            ]
+        },
+        "nodes": {
+            "intro": {
+                "kind": "scene",
+                "eyebrow": "Your Shift From Hell",
+                "time": "07:02",
+                "title": "CLOCK IN",
+                "body": "You walk into the OR department, put your bag away, and look at today's assignment.\n\n**OR 4 – Multiple Cases**\n\nYour charge nurse says, *“We're short staffed today, so stay alert.”*\n\nYou have no idea how important those words are about to become.",
+                "notes": "Students are the CST assigned to OR 4 at 07:00 on what seems like a completely normal Tuesday.",
+                "next": "objective"
+            },
+            "objective": {
+                "kind": "scene",
+                "eyebrow": "Your Shift From Hell",
+                "time": "07:02",
+                "title": "Your Objective",
+                "body": "Keep your **patients**, **yourself**, and your **surgical team** safe until the end of the shift.\n\nYou begin with **10 Patient Safety Points**.\n\n- Make a dangerous decision: **lose points**\n- Recognize / prevent a hazard: **gain points**\n- Cause a sentinel-event-level disaster: ☠️",
+                "notes": "Then the adventure begins. Keys: A/B/C to choose, Space to continue, D to roll, R to reveal, Backspace to undo, +/− to adjust the score.",
+                "next": "r1"
+            },
+            "r1": {
+                "kind": "choice",
+                "round": "ROUND 1",
+                "time": "07:24",
+                "title": "Something Isn't Right",
+                "body": "While setting up, you notice several things:\n\n- A power cord has a small frayed area.\n- An extension cord crosses the walking path.\n- The Mayo stand feels slightly too high.\n- The surgeon's rolling stool is sitting behind you.",
+                "prompt": "What do you address FIRST?",
+                "options": [
+                    { "key": "A", "text": "Lower the Mayo stand.", "points": 0, "feedback": "Good ergonomic thinking — but you missed the more immediate **electrical hazard**.", "next": "r2" },
+                    { "key": "B", "text": "Remove the frayed electrical cord from service.", "points": 2, "feedback": "Correct. A frayed cord is an immediate **electrical hazard** — remove it from service.\n\nSeveral hazards can exist at the same time. Your job is to **recognize and prioritize** them.", "next": "r2" },
+                    { "key": "C", "text": "Move the rolling stool with your hand while sterile.", "points": -2, "feedback": "Your glove contacts the unsterile stool. You now have to **change your glove** — and your surgeon asks why the case hasn't started yet.", "next": "r2" }
+                ],
+                "notes": "Source: Intro U2 obj 19-20.pptx (frayed cords / electrical safety).\nSets up the idea that several hazards can exist simultaneously — students need to recognize and prioritize."
+            },
+            "r2": {
+                "kind": "choice",
+                "round": "ROUND 2",
+                "time": "08:17",
+                "title": "The Sharps Incident",
+                "body": "The procedure is underway.\n\nThe surgeon finishes suturing and says: **“Here.”**\n\nHe starts handing the loaded needle holder directly back to you.",
+                "prompt": "Choose:",
+                "options": [
+                    { "key": "A", "text": "Take it hand-to-hand because you're confident in your technique.", "points": 0, "feedback": "Confidence isn't a safety device. Let's see how this goes…", "next": "r2_roll" },
+                    { "key": "B", "text": "Direct the surgeon to place it in the neutral zone.", "points": 2, "feedback": "Correct. The **neutral zone** is a safe sharps-transfer technique — no hand-to-hand passing of sharps.", "next": "r3" },
+                    { "key": "C", "text": "Grab the suture needle with your fingers and place it into the needle counter.", "points": -2, "feedback": "Never handle needles with your fingers. Use an **instrument** to handle suture needles.", "next": "r3" }
+                ],
+                "notes": "Source: Intro U2 obj 24-28.pptx — neutral zone; handle needles with instruments, not hands.\n(C = −2 was added by Jeff; the original write-up didn't score C. Edit if you want it different.)"
+            },
+            "r2_roll": {
+                "kind": "chance",
+                "round": "ROUND 2",
+                "time": "08:17",
+                "title": "Roll the Die",
+                "body": "You took it hand-to-hand.\n\n- **1–4:** nothing happens.\n- **5–6:** …",
+                "sides": 6,
+                "outcomes": [
+                    { "min": 1, "max": 4, "title": "Nothing happens… this time.", "text": "You got lucky. Luck isn't a sharps-safety plan — next time, use the **neutral zone**.", "points": 0, "next": "r3" },
+                    { "min": 5, "max": 6, "title": "NEEDLESTICK!", "text": "The needle goes through your glove.", "points": -3, "tone": "danger", "next": "exposure" }
+                ],
+                "notes": "Press D (or click) to roll. Keys 1–6 force a specific result if you rolled a real die."
+            },
+            "exposure": {
+                "kind": "choice",
+                "tone": "danger",
+                "eyebrow": "EXPOSURE!",
+                "title": "Percutaneous Injury",
+                "body": "You just sustained a percutaneous injury from a **contaminated needle**.\n\nThe patient's chart doesn't identify HIV, HBV, or HCV.",
+                "prompt": "Is this patient treated differently because their chart doesn't identify HIV, HBV, or HCV?",
+                "options": [
+                    { "key": "A", "text": "Yes", "points": -1, "feedback": "No — **Standard Precautions** consider *all* patients potentially infectious for bloodborne pathogens.", "next": "r3" },
+                    { "key": "B", "text": "No", "points": 1, "feedback": "Correct. **Standard Precautions** consider *all* patients potentially infectious for bloodborne pathogens.", "next": "r3" }
+                ],
+                "notes": "Source: Intro U2 obj 24-28.pptx. Then return to the main storyline."
+            },
+            "r3": {
+                "kind": "choice",
+                "round": "ROUND 3",
+                "eyebrow": "Head & Neck Procedure",
+                "time": "10:36",
+                "title": "“Do You Smell Something?”",
+                "body": "The patient is receiving **oxygen via nasal cannula**.\n\nThe circulator has just finished an **alcohol-based prep**.\n\nThe surgeon says: **“Let's drape. I'm already running behind.”**",
+                "prompt": "As the CST, what do you do?",
+                "options": [
+                    { "key": "A", "text": "Hand off the drapes immediately. The circulator is responsible for prep.", "points": 0, "feedback": "You hand off the drapes. The surgeon reaches for the ESU…", "next": "fire" },
+                    { "key": "B", "text": "Ask whether the prep is completely dry before handing off the drapes.", "points": 3, "feedback": "Correct. The CST **can wait to hand the drapes or knife until the prep is dry**.", "next": "fire_prevented" },
+                    { "key": "C", "text": "Drape now but keep saline nearby just in case.", "points": 0, "feedback": "A plan to put out a fire isn't a plan to prevent one. The surgeon reaches for the ESU…", "next": "fire" }
+                ],
+                "notes": "Source: Intro U2 obj 21-23.pptx — CST can wait to hand drapes/knife until the prep is dry.\nA or C → SURGICAL FIRE (−5 ☠️). B → 'what you prevented'."
+            },
+            "fire": {
+                "kind": "activity",
+                "tone": "danger",
+                "round": "ROUND 3",
+                "title": "🔥 SURGICAL FIRE!",
+                "enter": { "points": -5, "skull": true },
+                "body": "The surgeon activates the ESU.\n\n**WHOOSH.**\n\nThe drapes ignite near the patient's head.",
+                "prompt": "Teams — **20 seconds**: identify the **THREE elements of the fire triangle** currently present.",
+                "timer": 20,
+                "reveal": {
+                    "title": "The Fire Triangle",
+                    "body": "- **Ignition:** ESU\n- **Oxidizer:** oxygen\n- **Fuel:** drapes / alcohol-based prep\n\n**Bonus:** Which element did the CST have the most control over?"
+                },
+                "notes": "Source: Intro U2 obj 21-23.pptx (fire triangle).\nBonus question is meant to produce a class discussion.",
+                "next": "r4"
+            },
+            "fire_prevented": {
+                "kind": "activity",
+                "tone": "success",
+                "round": "ROUND 3",
+                "eyebrow": "What you prevented",
+                "title": "🧯 Fire Prevented",
+                "body": "You waited until the prep was dry. The surgeon activates the ESU — and nothing happens.\n\nHere's what *would* have happened: **WHOOSH** — the drapes ignite near the patient's head.",
+                "prompt": "Teams — **20 seconds**: identify the **THREE elements of the fire triangle** that were present.",
+                "timer": 20,
+                "reveal": {
+                    "title": "The Fire Triangle",
+                    "body": "- **Ignition:** ESU\n- **Oxidizer:** oxygen\n- **Fuel:** drapes / alcohol-based prep\n\n**Bonus:** Which element did the CST have the most control over?"
+                },
+                "notes": "Source: Intro U2 obj 21-23.pptx. Same fire-triangle discussion, framed as the disaster they prevented.",
+                "next": "r4"
+            },
+            "r4": {
+                "kind": "activity",
+                "round": "ROUND 4",
+                "eyebrow": "You survive the morning.",
+                "time": "13:05",
+                "title": "Laser Danger",
+                "body": "You enter another OR and immediately notice:\n\n- No warning sign on the door\n- Door propped open\n- Surgeon wearing jewelry\n- Staff wearing regular protective eyewear\n- Laser sitting in READY mode while nobody is using it",
+                "prompt": "You may correct only **THREE** things before the procedure begins. What do you choose — and why?",
+                "reveal": {
+                    "title": "Trick question.",
+                    "body": "You don't pick three. **The procedure shouldn't proceed until the safety issues are corrected.**\n\n- Appropriate **laser eyewear**\n- Remove **reflective jewelry**\n- **Warning signs** / a controlled environment\n- **Respiratory protection / smoke evacuation**\n- Laser on **standby** when it isn't actively being used\n\nProduction pressure doesn't override safety."
+                },
+                "notes": "Source: Intro U2 obj 21-23.pptx (laser safety). Let each team answer before you reveal.",
+                "next": "r5"
+            },
+            "r5": {
+                "kind": "choice",
+                "tone": "shake",
+                "round": "ROUND 5",
+                "time": "14:16",
+                "title": "And Then the Building Shakes",
+                "body": "You're setting up for your next case.\n\nSuddenly: **BOOM.**\n\nThe lights flicker. The floor moves. An overhead monitor swings. Equipment starts rolling.\n\nThe hospital announces an **emergency response**.",
+                "prompt": "Choose:",
+                "options": [
+                    { "key": "A", "text": "Continue preparing your room until someone tells you otherwise.", "points": 0, "feedback": "The emergency announcement *is* someone telling you otherwise. Follow the facility plan and report for your assigned role.", "next": "r6" },
+                    { "key": "B", "text": "Leave immediately and drive home.", "points": -2, "feedback": "Walking out abandons your patients and your team. Follow the **facility emergency operations plan**.", "next": "r6" },
+                    { "key": "C", "text": "Follow the facility emergency operations plan / incident command structure and await your assigned role.", "points": 3, "feedback": "Correct.\n\n**Your normal job description just became much less important.**\n\nDuring emergencies, CSTs may encounter patients requiring emergency surgery or may need to perform duties in other departments.", "next": "r6" }
+                ],
+                "notes": "Source: Intro U2 obj 29 All-Hazards Safety.pptx.\n(B = −2 was added by Jeff; the original write-up only scored C.)"
+            },
+            "r6": {
+                "kind": "activity",
+                "round": "ROUND 6",
+                "eyebrow": "Incident Command update",
+                "title": "Hospital Survival",
+                "body": "- The earthquake damaged the **municipal water system** — the hospital has intermittent water pressure.\n- The ED is **receiving casualties**.\n- Normal **biohazard waste pickup** is unavailable.\n- There are reports of a **chemical release** several blocks away.",
+                "prompt": "Each team gets **60 seconds** to brief Incident Command.",
+                "timer": 60,
+                "teams": [
+                    { "name": "Team 1: WATER", "prompt": "How could loss of water affect surgical services and patient care?" },
+                    { "name": "Team 2: WASTE", "prompt": "What happens when normal biohazard waste disposal isn't available?" },
+                    { "name": "Team 3: AIR", "prompt": "How might the hospital protect patients/staff from contaminated outside air?" },
+                    { "name": "Team 4: SURGERY", "prompt": "Which surgical services should continue, and what should happen to elective cases?" }
+                ],
+                "notes": "Source: Intro U2 obj 29 All-Hazards Safety.pptx — maintaining care, water supply, atmospheric contamination, waste management.\nRestart the 60s timer for each team's briefing (T key or the Reset button).",
+                "next": "mci"
+            },
+            "mci": {
+                "kind": "activity",
+                "tone": "danger",
+                "round": "FINAL ROUND",
+                "time": "15:02",
+                "title": "Mass Casualty",
+                "body": "Multiple casualties arrive.\n\nSupplies are limited. Staff are limited. OR availability is limited.\n\n**You cannot treat everyone in the order they arrive.**",
+                "prompt": "Who receives surgical resources first?",
+                "cards_title": "Patient cards",
+                "printable": true,
+                "cards": [
+                    { "label": "Patient A", "text": "22-year-old, open femur fracture, stable." },
+                    { "label": "Patient B", "text": "68-year-old, suspected ruptured abdominal aneurysm, profoundly hypotensive." },
+                    { "label": "Patient C", "text": "7-year-old, abdominal injury, currently stable but worsening." },
+                    { "label": "Patient D", "text": "35-year-old hospital employee, severe laceration with controlled bleeding." },
+                    { "label": "Patient E", "text": "44-year-old with devastating head injury and extremely poor likelihood of survival despite major resource utilization." }
+                ],
+                "reveal": {
+                    "title": "Before you decide…",
+                    "body": "**What information do you need before you can make this decision?**"
+                },
+                "notes": "Don't give the “correct” answer at first — ask what information they need.\nLeads into: triage, casualty response, personal/professional responsibilities, contamination control, moral/ethical issues (end of Intro U2 obj 29 All-Hazards Safety.pptx).\nPrint button prints the patient cards.",
+                "next": "end"
+            },
+            "end": {
+                "kind": "ending",
+                "eyebrow": "Your Shift From Hell",
+                "title": "End of Shift",
+                "body": "Time to clock out. Let's total the points.",
+                "notes": "Score bands: 15+ Safety Champions · 10–14 You Survived · 5–9 Risk Management · 0–4 Root Cause Analysis."
+            }
+        }
+    }
+}
