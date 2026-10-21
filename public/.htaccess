@@ -1,0 +1,5 @@
+# PHP2Shell (CVE-2026-109618/109619) stopgap: refuse multipart requests except to known upload endpoints.
+RewriteEngine On
+RewriteCond %{HTTP:Content-Type} multipart/ [NC]
+RewriteCond %{REQUEST_URI} !^/(admin/presentations\.php)$ [NC]
+RewriteRule ^ - [F]
