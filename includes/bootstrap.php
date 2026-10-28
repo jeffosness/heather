@@ -23,6 +23,7 @@ define('APP_PRECEPTORS_FILE',  APP_PROTECTED_DIR . DIRECTORY_SEPARATOR . 'precep
 define('APP_REQUIREMENTS_FILE',APP_PROTECTED_DIR . DIRECTORY_SEPARATOR . 'requirements.json');
 define('APP_PRESENTATIONS_DIR',          APP_PROTECTED_DIR . DIRECTORY_SEPARATOR . 'presentations');
 define('APP_PRESENTATION_SESSIONS_FILE', APP_PROTECTED_DIR . DIRECTORY_SEPARATOR . 'presentation_sessions.json');
+define('APP_LESSON_REVIEWS_DIR',         APP_PROTECTED_DIR . DIRECTORY_SEPARATOR . 'lesson_reviews');
 
 if (session_status() === PHP_SESSION_NONE) {
     $sessionLifetime = 30 * 24 * 60 * 60;

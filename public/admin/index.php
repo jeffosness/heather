@@ -14,6 +14,7 @@ require_once __DIR__ . '/../../includes/students_service.php';
 require_once __DIR__ . '/../../includes/cases_service.php';
 require_once __DIR__ . '/../../includes/cohort_report.php';
 require_once __DIR__ . '/../../includes/presentations_service.php';
+require_once __DIR__ . '/../../includes/lesson_reviews_service.php';
 
 $settings = app_settings();
 $me = current_user();
@@ -22,6 +23,7 @@ $allStudents = load_students();
 $pendingStudents = count(array_filter($allStudents, fn($s) => !student_has_password($s)));
 $totalCases = count(load_cases());
 $todayPresentations = todays_sessions();
+$pendingReviews = pending_lesson_reviews();
 
 $cohorts = all_cohorts();
 // Selected cohort: from query string, defaulting to the most recent.
@@ -51,6 +53,13 @@ require_once __DIR__ . '/../../includes/admin_header.php';
         <div class="alert alert-warning d-flex justify-content-between align-items-center flex-wrap gap-2">
             <span>📽 Presenting today: <strong><?= htmlspecialchars((string) $tpLesson['title']) ?></strong><?= ($tp['label'] ?? '') !== '' ? ' · ' . htmlspecialchars((string) $tp['label']) : '' ?></span>
             <a class="btn btn-dark btn-sm" href="/admin/present.php?session=<?= urlencode((string) $tp['id']) ?>" target="_blank">▶ Present</a>
+        </div>
+    <?php endforeach; ?>
+
+    <?php foreach ($pendingReviews as [$rv, $rvAnswers]): ?>
+        <div class="alert alert-info d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <span>🩺 New lesson draft ready for you to look over: <strong><?= htmlspecialchars((string) $rv['title']) ?></strong><?= !empty($rvAnswers['saved_at']) ? ' · in progress' : '' ?></span>
+            <a class="btn btn-dark btn-sm" href="/admin/lesson_review.php?id=<?= urlencode((string) $rv['id']) ?>">Review it</a>
         </div>
     <?php endforeach; ?>
 

@@ -114,6 +114,20 @@ it as a seed file (or import it via the admin Import button) and validate it; an
 `NEW FEATURES NEEDED` items are the engine work. Keep `ai_guide` in sync when a
 type's schema changes.
 
+### Lesson reviews (draft storyboards Heather OKs before we build)
+Heather won't follow multi-step flows or read GitHub, so when she sends a raw
+lesson idea we draft it ourselves and put it on the site for her to tap through.
+- Draft content: `includes/lesson_reviews/<id>.json` (steps with proposed answers,
+  wrong choices, "Instructor confirmation needed" items, and one-tap questions).
+- Page: `/admin/lesson_review.php?id=<id>`, linked from a dashboard banner until
+  she sends it. Her answers save to `protected/heather/lesson_reviews/<id>.json`;
+  **Send to Jeff** posts them as a comment on the draft's `issue` (read with
+  `gh issue view <n> --comments`).
+- Pictures are drawn in code, never uploaded: `assets/present/fields/<procedure>.js`
+  (cartoon surgical field; named stages, each adding/clearing layers) and
+  `assets/present/instruments.js` (shared instrument icon library). The game player
+  should reuse both.
+
 ## Auth model
 
 Single-owner today: every logged-in user is an admin (Heather). The
