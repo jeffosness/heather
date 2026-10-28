@@ -1,0 +1,518 @@
+{
+  "id": "bunionectomy",
+  "title": "Bunionectomy: what happens next?",
+  "issue": 10,
+  "field": "bunionectomy",
+  "intro": "Here's a first draft of the bunionectomy game, built from your outline. Each step shows what the students would see, the question \"What happens next?\", and the instrument they should pick. The pictures are cartoon drawings that change as the case moves along.\n\n**Nothing here is final.** Every instrument answer is a **proposal** until you OK it. Anything marked **Instructor confirmation needed** is a detail I didn't want to guess.\n\nFor each step, tap **Looks right** or **Needs a change** (add a note if you like). The **Questions for you** at the bottom are the main thing I need before building. Most are one tap.",
+  "outline_notes": [
+    "**\"Osteotomy to remove exostosis\":** taking off the bump is usually called an *exostectomy* (or medial eminence resection). \"Osteotomy\" usually means a corrective cut through the metatarsal to realign it. If your technique includes a corrective osteotomy, it should be its own step (step 11 below is a placeholder for it).",
+    "**\"Realign joint and fixate with screws\":** screws usually fix a bone cut (osteotomy), not the joint itself. The exception is a fusion like the Lapidus. Which one applies changes the fixation steps.",
+    "**\"Release soft tissues\":** which tissues, through which incision, and when? Some surgeons release before the bone work, some after.",
+    "**Not in the outline but part of the tech's job:** tourniquet, temporary pin with an x-ray check, and the closing count before closure. I added the count as its own step. The others are questions below.",
+    "**Opening the capsule** is part of \"dissection\" in I/H/D/R. I split it out (step 5) so students learn it as a separate moment."
+  ],
+  "steps": [
+    {
+      "id": "incision",
+      "stage": "1 · Incision, hemostasis, dissection, retraction",
+      "title": "Skin incision",
+      "sees": "Foot prepped and draped. The incision line is marked over the inside (medial) side of the big toe joint.",
+      "cue": "\"Knife.\"",
+      "action": "Make the skin incision.",
+      "pass": [{ "tool": "scalpel", "label": "Scalpel (blade on handle)" }],
+      "alternatives": "knife, blade",
+      "wrong": [
+        { "tool": "metz", "label": "Metzenbaum scissors", "why": "Scissors dissect tissue once the skin is open. They don't make the skin incision." },
+        { "tool": "esu", "label": "Electrosurgical pencil (Bovie)", "why": "Used for bleeders after the incision is made." },
+        { "tool": "freer", "label": "Freer elevator", "why": "Lifts tissue off bone, which comes much later." }
+      ],
+      "why_right": "The skin incision is made with the scalpel. The tech passes it safely (handle first, or using a neutral zone if that's facility policy).",
+      "field": "prepped",
+      "field_after": "incised",
+      "after_text": "The marked line becomes an incision and small bleeders appear.",
+      "confirm": ["Blade and handle size", "Incision approach (medial vs. dorsomedial)", "Hand-to-hand pass or neutral zone"]
+    },
+    {
+      "id": "hemostasis1",
+      "stage": "1 · Incision, hemostasis, dissection, retraction",
+      "title": "Hemostasis",
+      "sees": "Small bleeders along the skin edges.",
+      "cue": "\"Bovie.\"",
+      "action": "Control the bleeding.",
+      "pass": [{ "tool": "esu", "label": "Electrosurgical pencil (Bovie)" }],
+      "alternatives": "cautery, electrocautery, Bovie; mosquito hemostat + tie for a larger vessel",
+      "wrong": [
+        { "tool": "bulb", "label": "Bulb syringe", "why": "Irrigation clears the field but doesn't stop bleeding." },
+        { "tool": "suture_scissors", "label": "Suture scissors", "why": "Nothing to cut yet, since no suture has been placed." },
+        { "tool": "rongeur", "label": "Rongeur", "why": "Bites bone. It has nothing to do with bleeding." }
+      ],
+      "why_right": "Cautery seals small vessels. The tech keeps the tip clean between uses.",
+      "field": "incised",
+      "field_after": "hemostasis",
+      "after_text": "The red spots disappear.",
+      "confirm": ["Monopolar vs. bipolar", "Is a tourniquet up? (much less bleeding if so)"]
+    },
+    {
+      "id": "dissection",
+      "stage": "1 · Incision, hemostasis, dissection, retraction",
+      "title": "Dissection to the capsule",
+      "sees": "Fatty tissue under the skin. The joint capsule is underneath. A small skin nerve runs nearby.",
+      "cue": "\"Pickups and scissors.\"",
+      "action": "Dissect down through the subcutaneous tissue to the joint capsule.",
+      "pass": [{ "tool": "metz", "label": "Metzenbaum scissors" }, { "tool": "adson", "label": "Adson forceps (with teeth)" }],
+      "alternatives": "Metz, pickups, tissue forceps, tenotomy scissors",
+      "wrong": [
+        { "tool": "mayo", "label": "Curved Mayo scissors", "why": "Built for heavy tissue. Too coarse for fine dissection near a nerve." },
+        { "tool": "osteotome", "label": "Osteotome & mallet", "why": "Cuts bone. We're still in soft tissue." },
+        { "tool": "needle_holder", "label": "Needle holder", "why": "Drives suture needles, which is for closure." }
+      ],
+      "why_right": "Fine scissors and toothed forceps let the surgeon spread and cut the soft tissue carefully.",
+      "field": "hemostasis",
+      "field_after": "dissected",
+      "after_text": "The wound opens and the capsule shows at the bottom.",
+      "confirm": ["Scissors: Metzenbaum, tenotomy, or Stevens?", "Forceps type"]
+    },
+    {
+      "id": "retraction1",
+      "stage": "1 · Incision, hemostasis, dissection, retraction",
+      "title": "Retraction",
+      "sees": "The skin edges keep falling back over the capsule.",
+      "cue": "\"Retract.\"",
+      "action": "Hold the skin and soft tissue open for exposure.",
+      "pass": [{ "tool": "senn", "label": "Senn retractors (pair)" }],
+      "alternatives": "skin hooks, small rakes, Weitlaner (self-retaining)",
+      "wrong": [
+        { "tool": "deaver", "label": "Deaver retractor", "why": "A large abdominal retractor, far too big for a foot." },
+        { "tool": "richardson", "label": "Richardson retractor", "why": "Made for deep abdominal wounds. Wrong scale." },
+        { "tool": "towel_clip", "label": "Towel clip", "why": "Holds drapes, not tissue." }
+      ],
+      "why_right": "Small handheld retractors (or a small self-retainer) suit a small foot incision.",
+      "field": "dissected",
+      "field_after": "retracted",
+      "after_text": "Retractors pull the edges apart.",
+      "confirm": ["Which small retractors are on your tray", "Does the tech hold retractors in your setup?"]
+    },
+    {
+      "id": "capsulotomy",
+      "stage": "1 · Incision, hemostasis, dissection, retraction",
+      "title": "Open the capsule",
+      "sees": "The joint capsule is exposed over the bump.",
+      "cue": "\"Knife.\"",
+      "action": "Incise the joint capsule (capsulotomy).",
+      "pass": [{ "tool": "scalpel", "label": "Scalpel" }],
+      "alternatives": "knife, deep knife, fresh blade",
+      "wrong": [
+        { "tool": "rasp", "label": "Bone rasp", "why": "Smooths bone, but the bone isn't exposed yet." },
+        { "tool": "needle_holder", "label": "Needle holder", "why": "Closure instrument." },
+        { "tool": "kwire", "label": "K-wire driver", "why": "Pins bone after it's been realigned." }
+      ],
+      "why_right": "The capsule is cut with the scalpel to reach the bone.",
+      "field": "retracted",
+      "field_after": "capsule_open",
+      "after_text": "The capsule opens and bone shows underneath.",
+      "confirm": ["Capsule incision shape (linear, L-shaped, etc.)", "Separate \"deep knife\" or fresh blade?"]
+    },
+    {
+      "id": "elevate",
+      "stage": "1 · Incision, hemostasis, dissection, retraction",
+      "title": "Expose the bump",
+      "sees": "The capsule is open, but tissue is still stuck to the bump.",
+      "cue": "\"Freer.\"",
+      "action": "Lift the capsule and periosteum off the bump.",
+      "pass": [{ "tool": "freer", "label": "Freer (periosteal) elevator" }],
+      "alternatives": "periosteal elevator, elevator",
+      "wrong": [
+        { "tool": "adson", "label": "Adson forceps", "why": "Grasps tissue but can't lift it cleanly off bone." },
+        { "tool": "mosquito", "label": "Mosquito hemostat", "why": "Clamps small bleeders." },
+        { "tool": "suture_scissors", "label": "Suture scissors", "why": "Only for cutting suture." }
+      ],
+      "why_right": "An elevator peels soft tissue off the bone so the bump is fully exposed.",
+      "field": "capsule_open",
+      "field_after": "bone_exposed",
+      "after_text": "The bump (medial eminence) is fully exposed.",
+      "confirm": ["Elevator type on your tray"]
+    },
+    {
+      "id": "retraction2",
+      "stage": "1 · Incision, hemostasis, dissection, retraction",
+      "title": "Retraction around the bone",
+      "sees": "The bone is exposed, but the soft tissue needs protecting before any cutting.",
+      "cue": "\"Hohmanns.\"",
+      "action": "Place bone retractors around the metatarsal head to protect the soft tissue.",
+      "pass": [{ "tool": "hohmann", "label": "Small Hohmann retractors" }],
+      "alternatives": "Hohmann, bone retractor",
+      "wrong": [
+        { "tool": "skin_hook", "label": "Skin hook", "why": "Holds skin edges but won't protect tissue around bone from the saw." },
+        { "tool": "deaver", "label": "Deaver retractor", "why": "Far too big." },
+        { "tool": "mosquito", "label": "Mosquito hemostat", "why": "Not a retractor." }
+      ],
+      "why_right": "Hohmanns lever around the bone, holding soft tissue clear of the saw. Retraction comes back here, deeper this time.",
+      "field": "bone_exposed",
+      "field_after": "hohmann",
+      "after_text": "Retractor tips cup the bone.",
+      "confirm": ["Are Hohmanns used in this case?"]
+    },
+    {
+      "id": "exostectomy",
+      "stage": "2 · Remove the exostosis",
+      "title": "Remove the bump",
+      "sees": "The bump is exposed and protected.",
+      "cue": "\"Saw.\"",
+      "action": "Cut off the medial eminence (exostectomy).",
+      "pass": [{ "tool": "saw", "label": "Sagittal saw" }, { "tool": "bulb", "label": "Saline to cool the blade" }],
+      "alternatives": "power saw, micro-sagittal saw; osteotome & mallet",
+      "wrong": [
+        { "tool": "drill", "label": "Drill", "why": "Makes holes for screws, not cuts." },
+        { "tool": "rongeur", "label": "Rongeur", "why": "Close! It trims and smooths after the cut, but doesn't make it." },
+        { "tool": "needle_holder", "label": "Needle holder", "why": "Closure instrument." }
+      ],
+      "why_right": "The saw makes the cut. The tech may drip saline on the blade to keep the bone from overheating.",
+      "field": "hohmann",
+      "field_after": "bump_cut",
+      "after_text": "A cut line appears and the bump comes off.",
+      "confirm": ["Saw or osteotome", "Does the tech irrigate during the cut?", "Is this cut separate from a corrective osteotomy? (see step 11)"]
+    },
+    {
+      "id": "smooth",
+      "stage": "2 · Remove the exostosis",
+      "title": "Smooth the edge",
+      "sees": "The cut edge of the bone is rough.",
+      "cue": "\"Rasp.\"",
+      "action": "Smooth the cut edge.",
+      "pass": [{ "tool": "rasp", "label": "Bone rasp (file)" }],
+      "alternatives": "bone file, rongeur",
+      "wrong": [
+        { "tool": "scalpel", "label": "Scalpel", "why": "Cuts soft tissue, not bone." },
+        { "tool": "depth_gauge", "label": "Depth gauge", "why": "Measures screw holes, which comes later." },
+        { "tool": "mosquito", "label": "Mosquito hemostat", "why": "Clamps bleeders." }
+      ],
+      "why_right": "A rasp or rongeur leaves a smooth edge so it won't irritate the tissue.",
+      "field": "bump_cut",
+      "field_after": "smoothed",
+      "after_text": "The edge is smooth, with bone dust left behind.",
+      "confirm": ["Rasp, rongeur, or both"]
+    },
+    {
+      "id": "irrigate1",
+      "stage": "2 · Remove the exostosis",
+      "title": "Irrigation",
+      "sees": "Bone dust and debris in the wound.",
+      "cue": "\"Irrigate.\"",
+      "action": "Flush the field.",
+      "pass": [{ "tool": "bulb", "label": "Bulb syringe with saline" }],
+      "alternatives": "Asepto, bulb, irrigation (plus suction)",
+      "wrong": [
+        { "tool": "sponge", "label": "Sponge", "why": "Dabs blood but won't wash out bone dust." },
+        { "tool": "esu", "label": "Electrosurgical pencil", "why": "Controls bleeding, doesn't clean." },
+        { "tool": "rasp", "label": "Bone rasp", "why": "Makes more bone dust!" }
+      ],
+      "why_right": "Saline washes out bone debris, which helps prevent irritation and infection. Irrigation comes back again at closure.",
+      "field": "smoothed",
+      "field_after": "irrigated",
+      "after_text": "The field is clean and wet.",
+      "confirm": ["Irrigation solution (plain saline vs. antibiotic)"]
+    },
+    {
+      "id": "corrective",
+      "stage": "2 · Remove the exostosis",
+      "title": "Corrective osteotomy (only if your technique includes it)",
+      "sees": "The bump is gone, but the metatarsal is still angled.",
+      "cue": "\"Saw.\"",
+      "action": "Make the corrective cut through the metatarsal.",
+      "pass": [{ "tool": "saw", "label": "Sagittal saw" }],
+      "alternatives": "Instructor confirmation needed",
+      "wrong": [
+        { "tool": "drill", "label": "Drill", "why": "Holes come after the cut is made and positioned." },
+        { "tool": "rongeur", "label": "Rongeur", "why": "Trims bone but can't make a clean corrective cut." },
+        { "tool": "scalpel", "label": "Scalpel", "why": "Soft tissue only." }
+      ],
+      "why_right": "Placeholder: only included if the technique you teach has a corrective osteotomy.",
+      "field": "irrigated",
+      "field_after": "corrective",
+      "after_text": "A corrective cut line appears in the bone.",
+      "confirm": ["Is a corrective osteotomy part of this lesson at all?", "Which one, and where does it fall in the sequence?"]
+    },
+    {
+      "id": "release",
+      "stage": "3 · Release soft tissues",
+      "title": "Release the tight tissue",
+      "sees": "The big toe is still pulled toward the second toe by tight tissue on the outside of the joint.",
+      "cue": "\"Knife for the release.\"",
+      "action": "Release the tight lateral soft tissues.",
+      "pass": [{ "tool": "scalpel", "label": "Scalpel" }],
+      "alternatives": "tenotomy scissors; small blade (Instructor confirmation needed)",
+      "wrong": [
+        { "tool": "saw", "label": "Sagittal saw", "why": "This step is soft tissue, not bone." },
+        { "tool": "rongeur", "label": "Rongeur", "why": "Bites bone." },
+        { "tool": "kwire", "label": "K-wire driver", "why": "Pins come after the toe is realigned." }
+      ],
+      "why_right": "Cutting the tight tissue lets the toe swing back into line.",
+      "field": "corrective",
+      "field_after": "released",
+      "after_text": "The release site is marked between the first and second toes.",
+      "confirm": ["Which tissues are released", "Same incision or a separate one between the 1st and 2nd toes? (A separate one adds another incision, hemostasis and retraction.)", "Blade or scissors"]
+    },
+    {
+      "id": "realign",
+      "stage": "4 · Realign and fixate",
+      "title": "Realign and pin",
+      "sees": "The toe is now loose enough to straighten.",
+      "cue": "\"K-wire.\"",
+      "action": "Hold the corrected position with a temporary pin.",
+      "pass": [{ "tool": "kwire", "label": "K-wire on wire driver" }],
+      "alternatives": "Kirschner wire, guide pin, pin",
+      "wrong": [
+        { "tool": "drill", "label": "Drill", "why": "Close, but the position is held before drilling for screws." },
+        { "tool": "screwdriver", "label": "Screwdriver & screw", "why": "Comes after the hole is drilled and measured." },
+        { "tool": "osteotome", "label": "Osteotome & mallet", "why": "Cuts bone. We're holding it now, not cutting." }
+      ],
+      "why_right": "A temporary wire holds the alignment so the surgeon can check it (often on x-ray) before final fixation.",
+      "field": "released",
+      "field_after": "realigned",
+      "after_text": "The toe straightens and the pin shows.",
+      "confirm": ["Temporary K-wire used?", "Reduction clamp?", "Fluoroscopy (C-arm) check, and lead for the team?"]
+    },
+    {
+      "id": "drill",
+      "stage": "4 · Realign and fixate",
+      "title": "Drill for the screw",
+      "sees": "The alignment is held and confirmed.",
+      "cue": "\"Drill.\"",
+      "action": "Drill the pilot hole for the screw.",
+      "pass": [{ "tool": "drill", "label": "Drill with bit (and drill guide)" }],
+      "alternatives": "drill bit, pilot drill; cannulated drill over a guide wire",
+      "wrong": [
+        { "tool": "screwdriver", "label": "Screwdriver & screw", "why": "The hole has to be drilled and measured first." },
+        { "tool": "depth_gauge", "label": "Depth gauge", "why": "You measure after you drill." },
+        { "tool": "kwire", "label": "K-wire driver", "why": "The pin is already in." }
+      ],
+      "why_right": "Drill, then measure, then screw. Anticipating that order is the whole point here.",
+      "field": "realigned",
+      "field_after": "drilled",
+      "after_text": "A drill hole appears.",
+      "confirm": ["Screw system / brand", "Cannulated screws?", "Bit size (set by the system, not guessed)"]
+    },
+    {
+      "id": "measure",
+      "stage": "4 · Realign and fixate",
+      "title": "Measure",
+      "sees": "The pilot hole is drilled.",
+      "cue": "\"Depth gauge.\"",
+      "action": "Measure for screw length.",
+      "pass": [{ "tool": "depth_gauge", "label": "Depth gauge" }],
+      "alternatives": "measuring device",
+      "wrong": [
+        { "tool": "screwdriver", "label": "Screwdriver & screw", "why": "You can't pick the screw until you know the length." },
+        { "tool": "drill", "label": "Drill", "why": "Already drilled." },
+        { "tool": "rasp", "label": "Bone rasp", "why": "Smoothing is long done." }
+      ],
+      "why_right": "The depth gauge gives the length. The tech listens for the number and gets that screw ready.",
+      "field": "drilled",
+      "field_after": "drilled",
+      "after_text": "No change. The surgeon calls out a length.",
+      "confirm": ["Any countersink or tap step before the screw? (depends on the system)"]
+    },
+    {
+      "id": "screw",
+      "stage": "4 · Realign and fixate",
+      "title": "Insert the screw",
+      "sees": "The surgeon calls the screw length.",
+      "cue": "\"Give me a __ mm screw.\"",
+      "action": "Load the correct screw and pass it for insertion.",
+      "pass": [{ "tool": "screwdriver", "label": "Screwdriver loaded with screw" }],
+      "alternatives": "driver, screw",
+      "wrong": [
+        { "tool": "drill", "label": "Drill", "why": "The hole is already drilled." },
+        { "tool": "needle_holder", "label": "Needle holder", "why": "Closure instrument." },
+        { "tool": "kwire", "label": "K-wire driver", "why": "Temporary pin, not final fixation." }
+      ],
+      "why_right": "The tech confirms the length, loads the screw, and makes sure the implant gets recorded.",
+      "field": "drilled",
+      "field_after": "screwed",
+      "after_text": "Screws in, temporary pin out.",
+      "confirm": ["How many screws (drill, measure, screw repeats for each)", "When the K-wire comes out", "Implant documentation steps you want included"]
+    },
+    {
+      "id": "irrigate2",
+      "stage": "5 · Irrigation, hemostasis, closure, dressing",
+      "title": "Final irrigation",
+      "sees": "Fixation is done and the wound has debris in it.",
+      "cue": "\"Irrigate.\"",
+      "action": "Flush the wound before closing.",
+      "pass": [{ "tool": "bulb", "label": "Bulb syringe with saline" }],
+      "alternatives": "Asepto, irrigation",
+      "wrong": [
+        { "tool": "needle_holder", "label": "Needle holder", "why": "Closure comes after irrigation and hemostasis." },
+        { "tool": "dressing", "label": "Dressing", "why": "The very last thing." },
+        { "tool": "saw", "label": "Sagittal saw", "why": "Bone work is done." }
+      ],
+      "why_right": "One last flush before closing. Irrigation comes back here.",
+      "field": "screwed",
+      "field_after": "final_irrigate",
+      "after_text": "The field is clean and wet.",
+      "confirm": []
+    },
+    {
+      "id": "hemostasis2",
+      "stage": "5 · Irrigation, hemostasis, closure, dressing",
+      "title": "Hemostasis before closure",
+      "sees": "A little oozing.",
+      "cue": "\"Bovie.\"",
+      "action": "Control any remaining bleeding.",
+      "pass": [{ "tool": "esu", "label": "Electrosurgical pencil (Bovie)" }],
+      "alternatives": "cautery, bipolar",
+      "wrong": [
+        { "tool": "suture_scissors", "label": "Suture scissors", "why": "Nothing to cut yet." },
+        { "tool": "rasp", "label": "Bone rasp", "why": "Bone work is done." },
+        { "tool": "towel_clip", "label": "Towel clip", "why": "Holds drapes." }
+      ],
+      "why_right": "Bleeding is checked again before closing. Hemostasis comes back here.",
+      "field": "final_irrigate",
+      "field_after": "final_irrigate",
+      "after_text": "Field dry.",
+      "confirm": ["Is the tourniquet let down before closure in your technique?"]
+    },
+    {
+      "id": "count",
+      "stage": "5 · Irrigation, hemostasis, closure, dressing",
+      "title": "Closing count",
+      "sees": "The surgeon is about to close.",
+      "cue": "(The tech's call, not the surgeon's.)",
+      "action": "Start the closing count with the circulator: sponges, sharps, instruments.",
+      "pass": [{ "tool": "count", "label": "Count with circulator" }],
+      "alternatives": "closing count, first closing count",
+      "wrong": [
+        { "tool": "dressing", "label": "Get the dressing ready", "why": "Fine to prep, but the count comes first." },
+        { "tool": "scalpel", "label": "Scalpel", "why": "No more cutting." },
+        { "tool": "saw", "label": "Sagittal saw", "why": "Bone work is done." }
+      ],
+      "why_right": "Counting before closure protects the patient from a retained item. Starting it is the tech's job.",
+      "field": "final_irrigate",
+      "field_after": "final_irrigate",
+      "after_text": "Count correct, so closure can begin.",
+      "confirm": ["Your facility's count policy and timing"]
+    },
+    {
+      "id": "close_deep",
+      "stage": "5 · Irrigation, hemostasis, closure, dressing",
+      "title": "Close the capsule",
+      "sees": "Count correct. The capsule is open over the bone.",
+      "cue": "\"Suture.\"",
+      "action": "Close the capsule.",
+      "pass": [{ "tool": "needle_holder", "label": "Needle holder with suture" }, { "tool": "adson", "label": "Adson forceps" }],
+      "alternatives": "needle driver, loaded suture",
+      "wrong": [
+        { "tool": "mosquito", "label": "Mosquito hemostat", "why": "Clamps vessels. Not for driving needles." },
+        { "tool": "metz", "label": "Metzenbaum scissors", "why": "Dissecting scissors aren't used in closure." },
+        { "tool": "rongeur", "label": "Rongeur", "why": "Bone instrument." }
+      ],
+      "why_right": "The tech loads the needle holder and passes it ready to use, along with forceps.",
+      "field": "final_irrigate",
+      "field_after": "closed_deep",
+      "after_text": "Capsule stitched closed.",
+      "confirm": ["Suture type and size for each layer", "Separate subcutaneous layer?"]
+    },
+    {
+      "id": "cut_suture",
+      "stage": "5 · Irrigation, hemostasis, closure, dressing",
+      "title": "Cut the suture",
+      "sees": "Knot tied.",
+      "cue": "\"Cut.\"",
+      "action": "Cut the suture tails.",
+      "pass": [{ "tool": "suture_scissors", "label": "Suture scissors" }],
+      "alternatives": "straight Mayo scissors",
+      "wrong": [
+        { "tool": "metz", "label": "Metzenbaum scissors", "why": "Never cut suture with Metz scissors. It dulls them." },
+        { "tool": "scalpel", "label": "Scalpel", "why": "Not used to cut suture tails." },
+        { "tool": "mosquito", "label": "Mosquito hemostat", "why": "Doesn't cut." }
+      ],
+      "why_right": "Suture scissors (or straight Mayos) for suture. A classic teaching point.",
+      "field": "closed_deep",
+      "field_after": "closed_deep",
+      "after_text": "Tails trimmed.",
+      "confirm": ["Who cuts: tech or surgeon?"]
+    },
+    {
+      "id": "close_skin",
+      "stage": "5 · Irrigation, hemostasis, closure, dressing",
+      "title": "Close the skin",
+      "sees": "Deep layers closed. The skin is still open.",
+      "cue": "\"Skin.\"",
+      "action": "Close the skin.",
+      "pass": [{ "tool": "needle_holder", "label": "Needle holder with skin suture" }],
+      "alternatives": "skin stapler (Instructor confirmation needed)",
+      "wrong": [
+        { "tool": "esu", "label": "Electrosurgical pencil", "why": "Doesn't close skin." },
+        { "tool": "hohmann", "label": "Hohmann retractor", "why": "Bone retractor, done with it." },
+        { "tool": "bulb", "label": "Bulb syringe", "why": "Irrigation is done." }
+      ],
+      "why_right": "Skin closure is the final layer.",
+      "field": "closed_deep",
+      "field_after": "closed_skin",
+      "after_text": "The incision is stitched closed.",
+      "confirm": ["Skin suture vs. staples, and type"]
+    },
+    {
+      "id": "dressing",
+      "stage": "5 · Irrigation, hemostasis, closure, dressing",
+      "title": "Dressing",
+      "sees": "The skin is closed.",
+      "cue": "\"Dressing.\"",
+      "action": "Apply the dressing, holding the toe in its corrected position.",
+      "pass": [{ "tool": "dressing", "label": "Dressing layers" }],
+      "alternatives": "non-adherent layer, gauze, roll gauze, elastic wrap",
+      "wrong": [
+        { "tool": "towel_clip", "label": "Towel clip", "why": "Drapes come off after the dressing, not before." },
+        { "tool": "sponge", "label": "Counted sponge", "why": "Counted sponges aren't used as the dressing." },
+        { "tool": "bulb", "label": "Bulb syringe", "why": "Irrigation is done." }
+      ],
+      "why_right": "The dressing protects the incision and helps hold the correction.",
+      "field": "closed_skin",
+      "field_after": "dressed",
+      "after_text": "The foot is wrapped.",
+      "confirm": ["Exact dressing layers", "Post-op shoe or splint?"]
+    }
+  ],
+  "questions": [
+    {
+      "id": "technique",
+      "text": "Which bunionectomy are you teaching?",
+      "options": ["Bump removal only (no corrective cut)", "Bump removal + corrective osteotomy (e.g. chevron/Austin)", "Lapidus (fusion)", "Keep it generic"]
+    },
+    {
+      "id": "tourniquet",
+      "text": "Tourniquet?",
+      "options": ["Ankle tourniquet", "Thigh or calf tourniquet", "No tourniquet", "Leave it out of the game"]
+    },
+    {
+      "id": "release",
+      "text": "Where is the soft tissue release done?",
+      "options": ["Same incision", "Separate incision between the 1st and 2nd toes", "Not part of this lesson"]
+    },
+    {
+      "id": "fixation",
+      "text": "How is it fixed?",
+      "options": ["K-wire first, then screws", "Screws only", "Cannulated screws over a guide wire", "Generic \"screw\" steps are fine"]
+    },
+    {
+      "id": "xray",
+      "text": "Include a fluoroscopy (C-arm) check?",
+      "options": ["Yes", "No"]
+    },
+    {
+      "id": "closure",
+      "text": "Closure?",
+      "options": ["Absorbable deep + non-absorbable skin suture", "Absorbable throughout", "Staples for skin", "Just say \"suture\""]
+    },
+    {
+      "id": "format",
+      "text": "How should students answer?",
+      "options": ["Pick one of four (like this draft)", "Pick everything needed from a tray", "Start with pick-one, add the tray later"]
+    },
+    {
+      "id": "length",
+      "text": "Game length?",
+      "options": ["All the steps (~23)", "Shorter: just the key moments (~12)", "Split into two rounds"]
+    }
+  ]
+}

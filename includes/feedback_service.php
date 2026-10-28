@@ -174,6 +174,14 @@ function github_fetch_issue_comments(int $number): array
     return ($code >= 200 && $code < 300 && is_array($data)) ? $data : [];
 }
 
+function github_add_issue_comment(int $number, string $body): bool
+{
+    $g = github_settings();
+    if (!github_configured() || $number <= 0) return false;
+    [$code] = github_api_call('POST', "/repos/{$g['owner']}/{$g['repo']}/issues/{$number}/comments", ['body' => $body]);
+    return $code >= 200 && $code < 300;
+}
+
 function feedback_status_label(?array $issue): array
 {
     if ($issue === null) return ['label' => 'Sent', 'badge' => 'bg-secondary'];
